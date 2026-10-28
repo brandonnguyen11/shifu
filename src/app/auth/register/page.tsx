@@ -109,6 +109,14 @@ export default async function RegisterPage({
             Enter a valid email address to continue.
           </p>
         ) : null}
+        {error === "password" ? (
+          <p className="text-[12px] text-red-600">
+            Use a password of at least 8 characters.
+          </p>
+        ) : null}
+        {error && error !== "email" && error !== "password" ? (
+          <p className="text-[12px] text-red-600">{decodeURIComponent(error)}</p>
+        ) : null}
 
         <Button type="submit" className="h-10 w-full">
           Create account

@@ -1,5 +1,9 @@
 import { cookies } from "next/headers";
 
+import { getProfile } from "@/lib/personas";
+import { createClient } from "@/lib/supabase/server";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
+
 export type Role = "tutor" | "student";
 
 export const USER_COOKIE = "roomline_user";
@@ -8,12 +12,9 @@ export const ROLE_COOKIE = "roomline_role";
 export type SessionUser = {
   name: string;
   email: string;
+  id?: string;
 };
 
-/**
- * Demo directory. A real build replaces this with the auth provider's user
- * record and the tutor/student rows it maps to.
- */
 export const demoAccounts: Record<string, SessionUser> = {
   "sarah@roomline.com": { name: "Sarah Wilson", email: "sarah@roomline.com" },
   "emma@roomline.com": { name: "Emma Reyes", email: "emma@roomline.com" },
@@ -43,6 +44,27 @@ export function initialsOf(name: string) {
 }
 
 export async function getUser(): Promise<SessionUser | null> {
+  if (isSupabaseConfigured()) {
+    const profile = await getProfile();
+    if (profile) {
+      return {
+        id: profile.id,
+        name: profile.full_name || resolveUser(profile.email).name,
+        email: profile.email,
+      };
+    }
+
+    const supabase = await createClient();
+    if (supabase) {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user?.email) {
+        return { id: user.id, ...resolveUser(user.email) };
+      }
+    }
+  }
+
   const store = await cookies();
   const raw = store.get(USER_COOKIE)?.value;
   if (!raw) return null;
@@ -57,6 +79,11 @@ export async function getUser(): Promise<SessionUser | null> {
 }
 
 export async function getRole(): Promise<Role | null> {
+  if (isSupabaseConfigured()) {
+    const profile = await getProfile();
+    if (profile?.active_role) return profile.active_role;
+  }
+
   const store = await cookies();
   const value = store.get(ROLE_COOKIE)?.value;
   return value === "tutor" || value === "student" ? value : null;

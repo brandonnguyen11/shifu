@@ -70,6 +70,21 @@ export default async function LoginPage({
             Enter a valid email address to continue.
           </p>
         ) : null}
+        {error === "credentials" ? (
+          <p className="text-[12px] text-red-600">
+            Email or password is incorrect. Create an account if you are new.
+          </p>
+        ) : null}
+        {error === "auth" ? (
+          <p className="text-[12px] text-red-600">
+            Sign in failed. Try again or check Supabase Auth settings.
+          </p>
+        ) : null}
+        {params.notice === "confirm" ? (
+          <p className="text-[12px] text-zinc-600">
+            Check your email to confirm your account, then sign in.
+          </p>
+        ) : null}
 
         <Button type="submit" className="h-10 w-full">
           Continue
@@ -77,11 +92,12 @@ export default async function LoginPage({
       </form>
 
       <div className="mt-6 rounded-lg border border-zinc-200 bg-zinc-50 p-3">
-        <p className="text-[12px] font-medium text-zinc-700">Demo accounts</p>
+        <p className="text-[12px] font-medium text-zinc-700">Demo pairing</p>
         <p className="mt-1 text-[12px] leading-5 text-zinc-500">
-          sarah@roomline.com signs in as a tutor, emma@roomline.com as a
-          student. Any email works and any password is accepted in this
-          prototype.
+          Register <span className="font-medium">sarah@roomline.com</span> as a
+          tutor and <span className="font-medium">emma@roomline.com</span> as a
+          student (password at least 8 characters) to test live messaging
+          together.
         </p>
       </div>
 
