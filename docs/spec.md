@@ -2,7 +2,7 @@
 
 Status: next unstarted slice. Blocked on QA-5 and QA-6.  
 Source: QA-1 in `docs/qa-report.md`. The other high findings stay in `docs/backlog.md`.  
-Retest: the 2026-11-18 full-site pass reproduced the silent forgot-password form on application commit `5c6c6e14`. This slice stays unstarted until the redirect and callback patches on pull request #1 are retested.
+Retest: full-site passes on 2026-11-18, including the pass started from docs commit `dd2e6c6`, reproduced the silent forgot-password form on application commit `5c6c6e14`. This slice stays unstarted until the redirect and callback patches on pull request #1 are retested.
 
 ## User and goal
 

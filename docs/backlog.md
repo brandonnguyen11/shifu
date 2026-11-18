@@ -23,11 +23,12 @@ Order is the order to build. High QA findings come before new product ideas. Det
 
 ## Later
 
-14. Register password hint says 12 characters while the rule is 8. QA-15. Low.
-15. Show an error on `/auth/continue` when the role update fails. QA-15. Low.
-16. Move `src/middleware.ts` to the Next.js `proxy` convention. The current middleware's role redirects work. QA-15. Low.
-17. Workspace nav on a 390px screen should show Messages without the link running past the viewport. QA-7 note. Low.
-18. Footer X, LinkedIn, and GitHub links currently point at `/`. QA-15. Low.
+14. Demo registration stores a name built from the email and drops the name the person typed. QA-16. Low.
+15. Register password hint says 12 characters while the rule is 8. QA-15. Low.
+16. Show an error on `/auth/continue` when the role update fails. QA-15. Low.
+17. Move `src/middleware.ts` to the Next.js `proxy` convention. The current middleware's role redirects work. QA-15. Low.
+18. Workspace nav on a 390px screen should show Messages without the link running past the viewport. QA-7 note. Low.
+19. Footer X, LinkedIn, and GitHub links currently point at `/`. QA-15. Low.
 
 ## Not scheduled
 
