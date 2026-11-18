@@ -2,7 +2,7 @@
 
 Status: next slice. Start it after pull request #1 is merged.  
 Source: QA-1 in `docs/qa-report.md`. The other high findings stay in `docs/backlog.md`.  
-Retest: the pass started from docs commit `42a30a7` reproduced the silent forgot-password form on application commit `5c6c6e14`. That pass also reproduced the off-site `next` redirect, including from the workspace chooser. Pull request #1 at `2b9de32` was rebuilt. Sign-in and the chooser stayed on this host. This slice stays unstarted on the current tree because that tree still sends `next=//example.com` off the site.
+Retest: the pass started from docs commit `54cc6e33` reproduced the silent forgot-password form on application commit `5c6c6e14`. That pass also reproduced the off-site `next` redirect, including from the workspace chooser. Pull request #1 at `2b9de32` was rebuilt. Sign-in and the chooser stayed on this host. This slice stays unstarted on the current tree because that tree still sends `next=//example.com` off the site.
 
 ## User and goal
 
