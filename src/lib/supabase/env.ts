@@ -15,6 +15,10 @@ export function isSupabaseConfigured() {
   return Boolean(url && publishableKey);
 }
 
+export function hasSupabaseSecret() {
+  return Boolean(secretKey);
+}
+
 export function getSupabaseUrl() {
   if (!url) {
     throw new Error(

@@ -1,6 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { hasSupabaseSecret, isSupabaseConfigured } from "@/lib/supabase/env";
 import type { Role } from "@/lib/session";
 
 export type Profile = {
@@ -52,7 +52,7 @@ export async function setActiveRole(role: Role) {
 
 /** Links demo tutor/student profiles and ensures a conversation exists. */
 export async function ensureDemoEnrollment() {
-  if (!isSupabaseConfigured()) return;
+  if (!isSupabaseConfigured() || !hasSupabaseSecret()) return;
 
   const admin = createAdminClient();
 
