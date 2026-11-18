@@ -17,7 +17,8 @@ Parents are mentioned in copy and in one demo thread. There is no parent account
 
 - 2026-11-18: The current site is a prototype plus an auth and messaging foundation. It is not releasable. See `docs/release-decision.md`.
 - 2026-11-18: Fix the open high-severity QA findings before adding a new product surface. Sign-in must not follow a protocol-relative `next`, and the auth callback must stay on the browser's host, before password reset is built. See `docs/spec.md` and `docs/backlog.md`.
-- 2026-11-18: Pull request #1 already patches the redirect, callback host, score bars, narrow sign-out, and demo thread selection. That pull request is not merged. The default branch still has those bugs. Retest that head rather than starting a second implementation.
+- 2026-11-18: Pull request #1 already patches the redirect, callback host, score bars, narrow sign-out, demo thread selection, and the missing-secret guard. That pull request is not merged. The default branch still has those bugs. Retest that head rather than starting a second implementation.
+- 2026-11-18: A second full-site pass of application commit `5c6c6e14` reproduced QA-1 through QA-15. Release stays Hold. Password reset stays blocked until QA-5 and QA-6 are closed on the pull request #1 head.
 - Demo accounts named by the Supabase setup notes are `sarah@roomline.com` (tutor) and `emma@roomline.com` (student).
 
 ## Assumptions
