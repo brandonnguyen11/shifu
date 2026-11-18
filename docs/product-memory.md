@@ -20,6 +20,8 @@ Parents are mentioned in copy and in one demo thread. There is no parent account
 - 2026-11-18: Pull request #1 already patches the redirect, callback host, score bars, narrow sign-out, demo thread selection, and the missing-secret guard. That pull request is not merged. The default branch still has those bugs. Retest that head rather than starting a second implementation.
 - 2026-11-18: A second full-site pass of application commit `5c6c6e14` reproduced QA-1 through QA-15. Release stays Hold. Password reset stays blocked until QA-5 and QA-6 are closed on the pull request #1 head.
 - 2026-11-18: A later full-site pass, started from docs commit `dd2e6c6`, reproduced QA-1 through QA-15 on the same application commit and added QA-16 (demo registration ignores the typed name). Release stays Hold. Pull request #1 was still not the tree under test.
+- 2026-11-18: Another full-site pass, started from docs commit `d5806e9`, reproduced QA-1 through QA-16 on application commit `5c6c6e14`. `next=/%2f%2fexample.com` also leaves the site. Release stays Hold.
+- 2026-11-18: Pull request #1 head `2b9de32` was built and retested. Sign-in stays on this host, the callback on `127.0.0.1` stays on `127.0.0.1`, the chooser keeps a payments return path, score bars have height, sign-out is visible at 390px, and Monica's inbox row opens her thread. Password reset stays the next slice, and it starts after that pull request is merged. Message on a student still opens Emma's thread. The typed registration name is still dropped.
 - Demo accounts named by the Supabase setup notes are `sarah@roomline.com` (tutor) and `emma@roomline.com` (student).
 
 ## Assumptions

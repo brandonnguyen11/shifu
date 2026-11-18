@@ -1,8 +1,8 @@
 # Spec: Password reset that tells the truth
 
-Status: next unstarted slice. Blocked on QA-5 and QA-6.  
+Status: next slice. Start it after pull request #1 is merged.  
 Source: QA-1 in `docs/qa-report.md`. The other high findings stay in `docs/backlog.md`.  
-Retest: full-site passes on 2026-11-18, including the pass started from docs commit `dd2e6c6`, reproduced the silent forgot-password form on application commit `5c6c6e14`. This slice stays unstarted until the redirect and callback patches on pull request #1 are retested.
+Retest: the pass started from docs commit `d5806e9` reproduced the silent forgot-password form on application commit `5c6c6e14`. The same pass built pull request #1 at `2b9de32` and confirmed the redirect and callback fixes. This slice stays unstarted on the current tree because that tree still sends `next=//example.com` off the site.
 
 ## User and goal
 
@@ -21,7 +21,7 @@ A person who already has a Roomline account and cannot sign in. They need a rese
 - Use Supabase Auth recovery. Do not add another email provider.
 - Do not put the submitted email in the URL.
 - Keep the confirmation generic so the form cannot be used to learn which addresses are registered.
-- QA-5 and QA-6 are closed first. A recovery link that comes back through `/auth/callback` has to stay on the host the person is using, and a `next` value cannot leave the site. Pull request #1 already patches those two bugs. Retest that head. Do not write a second copy of the same helper while that pull request is open.
+- Merge pull request #1 first. A recovery link that comes back through `/auth/callback` has to stay on the host the person is using, and a `next` value cannot leave the site. That head passed the 2026-11-18 retest for those two bugs. Do not write a second copy of the helper.
 - Do not build sessions, assignments, or payments in this slice.
 
 ## Acceptance criteria
