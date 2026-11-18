@@ -2,7 +2,7 @@
 
 Status: next slice. Start it after pull request #1 is merged.  
 Source: QA-1 in `docs/qa-report.md`. The other high findings stay in `docs/backlog.md`.  
-Retest: the pass started from docs commit `5164e42` reproduced the silent forgot-password form on application commit `5c6c6e14`. That pass also reproduced the off-site `next` redirect, including `/%2f%2fexample.com` and the workspace chooser. Pull request #1 at `2b9de32` was rebuilt. Sign-in and the chooser stayed on this host. This slice stays unstarted on the current tree because that tree still sends `next=//example.com` off the site.
+Retest: the pass started from docs commit `963484b` reproduced the forgot-password form on application commit `5c6c6e14`. Clicking Send reset link stays on the page. Pressing Enter puts the address in the query string and shows the same claim. That pass also reproduced the off-site `next` redirect, including `/%2f%2fexample.com` and the workspace chooser. Pull request #1 at `2b9de32` was rebuilt. Sign-in and the chooser stayed on this host. This slice stays unstarted on the current tree because that tree still sends `next=//example.com` off the site. The button click and the Enter key both have to reach the confirmation or the demo-mode message.
 
 ## User and goal
 
@@ -26,7 +26,7 @@ A person who already has a Roomline account and cannot sign in. They need a rese
 
 ## Acceptance criteria
 
-- Submit on `/auth/forgot-password` with a valid email never reloads the same silent form.
+- Submit on `/auth/forgot-password` with a valid email, by clicking the button or pressing Enter, never reloads the same silent form.
 - With Supabase configured, a recovery email is requested and the page shows the generic confirmation.
 - With Supabase unset, the page explains that demo mode cannot send email.
 - An email without `@` shows an error and does not show the success confirmation.
