@@ -2,7 +2,7 @@
 
 Status: next slice. Start it after pull request #1 is merged.  
 Source: QA-1 in `docs/qa-report.md`. The other high findings stay in `docs/backlog.md`.  
-Retest: the pass started from docs commit `b834295` reproduced the forgot-password form on application commit `5c6c6e14`. Clicking Send reset link, pressing Enter, and a native submit all put the address in the query string and show the same claim. That pass also reproduced the off-site `next` redirect, including `/%2f%2fexample.com` and the workspace chooser. Pull request #1 at `2b9de32` was rebuilt. Sign-in and the chooser stayed on this host. This slice stays unstarted on the current tree because that tree still sends `next=//example.com` off the site. The button click and the Enter key both have to reach the confirmation or the demo-mode message.
+Retest: the pass started from docs commit `529d76d` reproduced the forgot-password form on application commit `5c6c6e14`. Clicking Send reset link, pressing Enter, and a native submit all put the address in the query string and show the same claim. That pass also reproduced the off-site `next` redirect, including `/%2f%2fexample.com` and the workspace chooser. Pull request #1 at `2b9de32` was rebuilt. Sign-in and the chooser stayed on this host. This slice stays unstarted on the current tree because that tree still sends `next=//example.com` off the site. The button click and the Enter key both have to reach the confirmation or the demo-mode message.
 
 ## User and goal
 
