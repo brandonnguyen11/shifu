@@ -22,6 +22,7 @@ Parents are mentioned in copy and in one demo thread. There is no parent account
 - 2026-11-18: A later full-site pass, started from docs commit `dd2e6c6`, reproduced QA-1 through QA-15 on the same application commit and added QA-16 (demo registration ignores the typed name). Release stays Hold. Pull request #1 was still not the tree under test.
 - 2026-11-18: Another full-site pass, started from docs commit `d5806e9`, reproduced QA-1 through QA-16 on application commit `5c6c6e14`. `next=/%2f%2fexample.com` also leaves the site. Release stays Hold.
 - 2026-11-18: Pull request #1 head `2b9de32` was built and retested. Sign-in stays on this host, the callback on `127.0.0.1` stays on `127.0.0.1`, the chooser keeps a payments return path, score bars have height, sign-out is visible at 390px, and Monica's inbox row opens her thread. Password reset stays the next slice, and it starts after that pull request is merged. Message on a student still opens Emma's thread. The typed registration name is still dropped.
+- 2026-11-18: A later full-site pass, started from docs commit `560c725`, reproduced QA-1 through QA-16 on application commit `5c6c6e14`. Choosing a workspace with `next=//example.com` also leaves the site. The same pass built pull request #1 at `2b9de32` again. That chooser submit stays on `/tutor`, and the other patch checks passed again. Release stays Hold.
 - Demo accounts named by the Supabase setup notes are `sarah@roomline.com` (tutor) and `emma@roomline.com` (student).
 
 ## Assumptions
