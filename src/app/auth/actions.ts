@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { ensureDemoEnrollment, setActiveRole } from "@/lib/personas";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { continueTarget, destinationFor } from "@/lib/safe-path";
 import {
   ROLE_COOKIE,
   USER_COOKIE,
@@ -68,17 +69,15 @@ export async function signIn(formData: FormData) {
       .eq("email", email)
       .maybeSingle();
 
-    if (profile?.active_role) {
-      redirect(
-        next.startsWith("/") ? next : homeFor(profile.active_role as Role)
-      );
+    if (profile?.active_role === "tutor" || profile?.active_role === "student") {
+      redirect(destinationFor(next, profile.active_role));
     }
 
-    redirect(next.startsWith("/") ? next : "/auth/continue");
+    redirect(continueTarget(next));
   }
 
   await writeDemoUser(email);
-  redirect(next.startsWith("/") ? next : "/auth/continue");
+  redirect(continueTarget(next));
 }
 
 export async function signUp(formData: FormData) {
@@ -135,11 +134,11 @@ export async function chooseWorkspace(formData: FormData) {
   if (isSupabaseConfigured()) {
     const result = await setActiveRole(role);
     if (result.error) redirect("/auth/continue?error=role");
-    redirect(next.startsWith("/") ? next : homeFor(role));
+    redirect(destinationFor(next, role));
   }
 
   await writeDemoRole(role);
-  redirect(next.startsWith("/") ? next : homeFor(role));
+  redirect(destinationFor(next, role));
 }
 
 export async function signOut() {
