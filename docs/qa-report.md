@@ -1,14 +1,14 @@
 # QA report
 
 Date: 2026-11-18  
-Commit under test: application commit `5c6c6e14`. This pass started from docs commit `963484b`. The docs commits do not change the app.  
+Commit under test: application commit `5c6c6e14`. This pass started from docs commit `b834295`. The docs commits do not change the app.  
 App: Roomline (`ai-tutoring-concierge`)  
 Build: `next build`, then `next start` on `http://127.0.0.1:3000` (Next.js 16.3.5).  
 Mode: demo cookie session. `NEXT_PUBLIC_SUPABASE_URL`, the publishable key, the anon key, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` are unset, and there is no `.env`. Live Supabase auth and messaging were not executed.
 
 **Release decision: Hold.** See [release-decision.md](./release-decision.md).
 
-This pass reproduced QA-1 through QA-16 on `5c6c6e14`. Sign-in with `next=//example.com`, `next=///example.com`, and `next=/\example.com` finished on `https://example.com/`. `/auth/login?next=/%2f%2fexample.com` decoded the hidden field to `///example.com` and also opened `https://example.com/`. The workspace chooser follows `next=//example.com` off the site. Pull request [#1](https://github.com/brandonnguyen11/shifu/pull/1) is still open at `2b9de32`. This pass built that head, ran its `npm test` (4 passing), and repeated the browser checks. The patch still holds. Message on a student still opens Emma's thread, and demo registration still drops the typed name.
+This pass reproduced QA-1 through QA-16 on `5c6c6e14`. Sign-in with `next=//example.com`, `next=///example.com`, and `next=/\example.com` left this host and requested `https://example.com/`. `/auth/login?next=/%2f%2fexample.com` decoded the hidden field to `///example.com` and did the same. The workspace chooser follows `next=//example.com` off the site. Clicking Send reset link, pressing Enter, and a native `requestSubmit()` all put the address in the query string and still claim a reset email will be sent. Pull request [#1](https://github.com/brandonnguyen11/shifu/pull/1) is still open at `2b9de32`. This pass built that head, ran its `npm test` (4 passing), and repeated the browser checks in fresh browser contexts. The patch still holds. Message on a student still opens Emma's thread, and demo registration still drops the typed name.
 
 ## Checks run
 
@@ -61,7 +61,7 @@ Reproduction:
 
 Expected: The app requests a reset email, or it explains that reset email is unavailable. The address is left out of the URL, and the page does not claim a message was sent.
 
-Actual: Clicking "Send reset link" leaves the URL at `/auth/forgot-password`. No navigation request is sent, and the page still says "We'll email a reset link that expires in 30 minutes." The control is a `type="submit"` button, and the form has no method and no action. Pressing Enter, and a native `requestSubmit()`, both navigate with GET to `/auth/forgot-password?email=sarah%40roomline.com`. The same form is shown again, with the same claim.
+Actual: The form has no method or action attribute, so the browser submits it with GET to the current page. Clicking "Send reset link", pressing Enter, and a native `requestSubmit()` all navigate to `/auth/forgot-password?email=sarah%40roomline.com`. The same form is shown again, still saying "We'll email a reset link that expires in 30 minutes." No reset email is requested.
 
 Recommended fix: Call Supabase `resetPasswordForEmail` when Supabase is configured, and show one generic confirmation. When it is not configured, say that demo mode cannot send email and keep the address out of the query string. Build that on the pull request #1 head after it merges. The recovery link uses the callback.
 
@@ -96,12 +96,12 @@ Recommended fix: Wire the smallest real action, or render the control disabled w
 
 Reproduction:
 
-1. Register a new student. This pass used the name Riley Chen and the email `riley.chen.qa48@example.com`, then opened `/student/room`.
+1. Register a new student. This pass used the name Riley Chen and the email `riley.chen.qa49@example.com`, then opened `/student/room`.
 2. Open Sessions, Assignments, and Progress.
 
 Expected: The room, sessions, assignments, and progress belong to that student, or the page says the content is sample data for Emma Reyes.
 
-Actual: The shell shows "Riley Chen Qa48". The room subtitle is "Algebra II with Sarah Wilson", mastery is 68%, and the next session is today at 4:00 PM. Nothing on those pages says the academic record is sample data. Sessions are with Sarah Wilson. Progress shows Factoring at 61%. The messages page is the one surface that says the thread is a demo ("Your conversation with Sarah Wilson (demo)"). Tutor roster, calendar, assignments, and payments are the same static records for every tutor account. There is no separate student dashboard. `/student` redirects to `/student/room`.
+Actual: The shell shows "Riley Chen Qa49". The room subtitle is "Algebra II with Sarah Wilson", mastery is 68%, and the next session is today at 4:00 PM. Nothing on those pages says the academic record is sample data. Sessions are with Sarah Wilson. Progress shows Factoring at 61%. The messages page is the one surface that says the thread is a demo ("Your conversation with Sarah Wilson (demo)"). Tutor roster, calendar, assignments, and payments are the same static records for every tutor account. There is no separate student dashboard. `/student` redirects to `/student/room`.
 
 Recommended fix: Drive these pages from the signed-in profile, or label every block as sample data until that exists.
 
@@ -138,7 +138,7 @@ Reproduction:
 
 Expected: The person stays on this site.
 
-Actual: Both paths land on `https://example.com/`. The same sign-in sends `///example.com` and `/\example.com` to `https://example.com/` as well. `/auth/login?next=/%2f%2fexample.com` decodes the hidden field to `///example.com` and also opens `https://example.com/`. The hidden `next` field copies the query value through. `signIn` and `chooseWorkspace` treat any string that starts with `/` as safe, and `redirect()` follows a protocol-relative path. The callback uses the same `startsWith("/")` check after a successful code exchange. That success path was not executed. A callback request with no code and `next=//example.com` stays on the login error page. `https://example.com` and `javascript:alert(1)` stay on `/auth/continue`.
+Actual: Both paths leave this host and request `https://example.com/`. The same sign-in sends `///example.com` and `/\example.com` there as well. `/auth/login?next=/%2f%2fexample.com` decodes the hidden field to `///example.com` and also requests `https://example.com/`. The hidden `next` field copies the query value through. `signIn` and `chooseWorkspace` treat any string that starts with `/` as safe, and `redirect()` follows a protocol-relative path. The callback uses the same `startsWith("/")` check after a successful code exchange. That success path was not executed. A callback request with no code and `next=//example.com` stays on the login error page. `https://example.com` and `javascript:alert(1)` stay on `/auth/continue`. These redirect cases were run in fresh browser contexts.
 
 Recommended fix: Use the helper already on pull request #1. Do not write a second copy.
 
@@ -335,12 +335,12 @@ Recommended fix: Merge the pull request #1 sign-in path. It sends a signed-in pe
 Reproduction:
 
 1. Open `/auth/register` with Supabase unset.
-2. Choose student, enter the name Riley Chen, the email `riley.chen.qa48@example.com`, and a password of 8 characters.
+2. Choose student, enter the name Riley Chen, the email `riley.chen.qa49@example.com`, and a password of 8 characters.
 3. Submit and read the workspace shell.
 
 Expected: The shell shows Riley Chen.
 
-Actual: The shell shows "Riley Chen Qa48". `signUp` reads the name field and, in demo mode, calls `writeDemoUser(email)` without it. `resolveUser` builds the display name from the email. Known demo addresses still resolve to Sarah Wilson and Emma Reyes. The same registration on pull request #1, with `riley.chen.pr1d@example.com`, showed "Riley Chen Pr1d".
+Actual: The shell shows "Riley Chen Qa49". `signUp` reads the name field and, in demo mode, calls `writeDemoUser(email)` without it. `resolveUser` builds the display name from the email. Known demo addresses still resolve to Sarah Wilson and Emma Reyes. The same registration on pull request #1, with `riley.chen.pr1e@example.com`, showed "Riley Chen Pr1e".
 
 Recommended fix: Store the submitted name on the demo user cookie. Keep `resolveUser` as the fallback when the name is empty.
 
@@ -360,7 +360,7 @@ Browser retest of that head:
 - At 390×844, Sign out and Switch workspace were visible on `/student/room` (63×26 at x=315, y=145 and 120×26 at x=195, y=145). The Messages link still ran from x=352 with width 83. Nav `scrollWidth` was 447 and `clientWidth` was 390.
 - Monica Keller's row is a link to `/tutor/messages?c=monica`. After the click the open thread was the Wednesday 5:30 reschedule, and Emma's factoring message was not the open thread.
 - Message on Michael Tran is a link to `/tutor/messages` with no conversation id. The open thread was still Emma's ("I got stuck on question 4 of the factoring set.").
-- Registering Riley Chen as `riley.chen.pr1d@example.com` showed "Riley Chen Pr1d".
+- Registering Riley Chen as `riley.chen.pr1e@example.com` showed "Riley Chen Pr1e".
 
 Do not write a second copy of the redirect helper, the callback host, the chooser URL, the score bars, the narrow sign-out, or the demo inbox links.
 
