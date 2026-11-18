@@ -1,7 +1,7 @@
 # QA report
 
 Date: 2026-11-18  
-Commit under test: application commit `5c6c6e14`. This pass started from docs commit `5164e42`. The docs commits do not change the app.  
+Commit under test: application commit `5c6c6e14`. This pass started from docs commit `963484b`. The docs commits do not change the app.  
 App: Roomline (`ai-tutoring-concierge`)  
 Build: `next build`, then `next start` on `http://127.0.0.1:3000` (Next.js 16.3.5).  
 Mode: demo cookie session. `NEXT_PUBLIC_SUPABASE_URL`, the publishable key, the anon key, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` are unset, and there is no `.env`. Live Supabase auth and messaging were not executed.
@@ -33,7 +33,7 @@ This pass reproduced QA-1 through QA-16 on `5c6c6e14`. Sign-in with `next=//exam
 - With the browser email check turned off, `not-an-email` reaches `/auth/register?error=email` and the copy "Enter a valid email address to continue."
 - A new student account lands on `/student/room`. `/student` then redirects to `/student/room`. "Message tutor" opens `/student/messages`. "Switch workspace" opens `/auth/continue`.
 - Choosing a workspace sets the role. A student who opens `/tutor` returns to `/student/room`. A tutor who opens `/student/room` returns to `/tutor`.
-- Sign out on a desktop-width screen returns to `/`. The next visit to `/student/room` requires sign-in again, and the `roomline_` cookies are gone. On `/tutor/payments` at 1280×900 the Sign out button is inside the viewport (63×26 at x=12, y=862).
+- Sign out on a desktop-width screen returns to `/`. The `roomline_` cookies are gone. A later visit to `/student/room` with no session requires sign-in again. On `/tutor/payments` at 1280×900 the Sign out button is inside the viewport (63×26 at x=12, y=862).
 - A sign-in with no `next` opens the chooser at `/auth/continue`.
 - `/tutor/students/does-not-exist` returns 404 and renders "This page could not be found."
 - Michael Tran's detail shows "No assessments yet", "Nothing assigned yet", and "Not scheduled".
@@ -41,7 +41,7 @@ This pass reproduced QA-1 through QA-16 on `5c6c6e14`. Sign-in with `next=//exam
 - Demo messaging says sending is disabled. The student page says "Sending is disabled until live messaging is connected." The tutor page says "Sending is disabled in demo mode." The student composer is not a textarea.
 - At 390px the home page, the tutor dashboard, and the payments page stay within the viewport (`scrollWidth` 390). The calendar week grid is 720px wide inside a horizontal scroller whose client width is 340.
 - `https://example.com` and `javascript:alert(1)` as `next` stay on this site and open the chooser. A value has to start with `/` before the redirect uses it.
-- `/auth/callback` does not follow `Host: evil.example` or `X-Forwarded-Host: evil.example`. Both stay on localhost. See QA-6 for the loopback host bug and the forwarded scheme.
+- `/auth/callback` does not follow `Host: evil.example` or `X-Forwarded-Host: evil.example`. Both stay on localhost. A callback with no code and `next=//example.com` stays on the login error page. See QA-6 for the loopback host bug and the forwarded scheme.
 
 ## Open findings
 
@@ -56,11 +56,12 @@ Reproduction:
 
 1. Open `/auth/forgot-password`.
 2. Enter `sarah@roomline.com`.
-3. Submit "Send reset link".
+3. Click "Send reset link".
+4. Separately, type the same address and press Enter.
 
 Expected: The app requests a reset email, or it explains that reset email is unavailable. The address is left out of the URL, and the page does not claim a message was sent.
 
-Actual: The form has no method and no action. The browser navigates with GET to `/auth/forgot-password?email=sarah%40roomline.com`. The same form is shown again, still saying "We'll email a reset link that expires in 30 minutes."
+Actual: Clicking "Send reset link" leaves the URL at `/auth/forgot-password`. No navigation request is sent, and the page still says "We'll email a reset link that expires in 30 minutes." The control is a `type="submit"` button, and the form has no method and no action. Pressing Enter, and a native `requestSubmit()`, both navigate with GET to `/auth/forgot-password?email=sarah%40roomline.com`. The same form is shown again, with the same claim.
 
 Recommended fix: Call Supabase `resetPasswordForEmail` when Supabase is configured, and show one generic confirmation. When it is not configured, say that demo mode cannot send email and keep the address out of the query string. Build that on the pull request #1 head after it merges. The recovery link uses the callback.
 
@@ -75,12 +76,12 @@ Reproduction:
 
 1. Sign in as a student and open `/student/room`.
 2. Choose "Join session". The control is a `<span>`. The URL stays `/student/room`.
-3. Open `/student/assignments` and choose "Start assignment". The URL stays on that page.
+3. Open `/student/assignments` and choose "Start assignment". The URL stays on that page. "Book a session" on `/student/sessions` does the same.
 4. Sign in as a tutor. Choose "Approve" on the dashboard, "Add student" on `/tutor/students`, "New session" on the calendar, "Approve grade" on assignments, "New message" on messages, or "New package" on payments.
 
 Expected: Each control starts that task, or it is clearly unavailable.
 
-Actual: These controls use button styles and are `<span>` elements. Clicking them leaves the URL unchanged. Approve on `/tutor` was clicked this pass and the URL stayed `/tutor`. The same click result held for New session, Approve grade, New package, and New message. Message on a student is also a `<span>` and stays on `/tutor/students/michael-tran`. The sessions page shows "Book a session". That control is the same span pattern.
+Actual: These controls use button styles and are `<span>` elements. Clicking them leaves the URL unchanged. Approve on `/tutor` was clicked this pass and the URL stayed `/tutor`. The same click result held for New session, Approve grade, New package, and New message. Message on a student is also a `<span>` and stays on `/tutor/students/michael-tran`.
 
 "Message tutor" on the student room is a real link and opens `/student/messages`. The dashboard control labeled "Add student" is a link to `/tutor/students`. It opens the roster. It does not add a student. The roster then shows another "Add student" control that does nothing.
 
@@ -95,12 +96,12 @@ Recommended fix: Wire the smallest real action, or render the control disabled w
 
 Reproduction:
 
-1. Register a new student. This pass used the name Riley Chen and the email `riley.chen.qa42@example.com`, then opened `/student/room`.
+1. Register a new student. This pass used the name Riley Chen and the email `riley.chen.qa48@example.com`, then opened `/student/room`.
 2. Open Sessions, Assignments, and Progress.
 
 Expected: The room, sessions, assignments, and progress belong to that student, or the page says the content is sample data for Emma Reyes.
 
-Actual: The shell shows "Riley Chen Qa42". The room subtitle is "Algebra II with Sarah Wilson", mastery is 68%, and the work list is the factoring set. Nothing on those pages says the academic record is sample data. Sessions are with Sarah Wilson. Progress shows Factoring at 61%. The messages page is the one surface that says the thread is a demo ("Your conversation with Sarah Wilson (demo)"). Tutor roster, calendar, assignments, and payments are the same static records for every tutor account. There is no separate student dashboard. `/student` redirects to `/student/room`.
+Actual: The shell shows "Riley Chen Qa48". The room subtitle is "Algebra II with Sarah Wilson", mastery is 68%, and the next session is today at 4:00 PM. Nothing on those pages says the academic record is sample data. Sessions are with Sarah Wilson. Progress shows Factoring at 61%. The messages page is the one surface that says the thread is a demo ("Your conversation with Sarah Wilson (demo)"). Tutor roster, calendar, assignments, and payments are the same static records for every tutor account. There is no separate student dashboard. `/student` redirects to `/student/room`.
 
 Recommended fix: Drive these pages from the signed-in profile, or label every block as sample data until that exists.
 
@@ -226,11 +227,11 @@ Reproduction:
 
 1. With Supabase unset, open `/auth/login`.
 2. Keep `sarah@roomline.com` and replace the password with any other non-empty value.
-3. Submit, choose Tutor, then read `document.cookie`.
+3. Submit, choose Tutor, then read the session cookies.
 
 Expected: A password check, or copy that this local mode does not use the password. The session cookies are not readable from page script.
 
-Actual: The password `not-the-demo-password` opens the workspace chooser for `sarah@roomline.com`. `signIn` does not read the password in the demo branch. After Tutor is chosen, `document.cookie` contains both `roomline_user` and `roomline_role`. Neither cookie is `httpOnly` (`sameSite` Lax). The form is prefilled with `demo-password`, which will also be wrong once Supabase is configured unless that is the account's password.
+Actual: The password `not-the-demo-password` opens the workspace chooser for `sarah@roomline.com`. `signIn` does not read the password in the demo branch. After sign-in, `document.cookie` contains `roomline_user`. After a role is chosen, both `roomline_user` and `roomline_role` are present and neither is `httpOnly` (`sameSite` Lax). The form is prefilled with `demo-password`, which will also be wrong once Supabase is configured unless that is the account's password.
 
 Recommended fix: Keep the bypass only for local demo, and say that on the form. Set `httpOnly` on the demo cookies.
 
@@ -248,7 +249,7 @@ Reproduction:
 
 Expected: Those pages are reachable from the header.
 
-Actual: The header nav computes to `display: none` below the `md` breakpoint. The three links are in the DOM, measure 0×0, and sit under a hidden ancestor. Sign in and Get started stay visible. About, Pricing, and Trust remain in the footer. The home page does not overflow (`scrollWidth` 390).
+Actual: The header nav computes to `display: none` below the `md` breakpoint. The three links are in the DOM, measure 0×0, and sit under a hidden ancestor. Sign in and Get started stay visible. About, Pricing, and Trust remain in the footer. The home page does not overflow (`scrollWidth` 390). Pricing at the same width also stays within 390.
 
 Recommended fix: Add a compact menu for the three header links below `md`.
 
@@ -318,7 +319,7 @@ Recommended fix: Merge the pull request #1 sign-in path. It sends a signed-in pe
 - Status: Open. Reproduced this pass.
 
 - Register placeholder says "At least 12 characters" and the server accepts 8. The error for a shorter password says "Use a password of at least 8 characters." An 8-character password completed registration. File: `src/app/auth/register/page.tsx`.
-- `/auth/continue?error=role` does not render an error. The chooser only says who is signed in. This pass opened that URL for `riley.student.gate@example.com` and the page still only said "Signed in as riley.student.gate@example.com." File: `src/app/auth/continue/page.tsx`.
+- `/auth/continue?error=role` does not render an error. The chooser only says who is signed in. This pass opened that URL for `sarah@roomline.com` and the page still only said "Signed in as sarah@roomline.com." File: `src/app/auth/continue/page.tsx`.
 - `next build` warns that `src/middleware.ts` should move to the `proxy` convention. The role redirects under test were correct.
 - Footer X, LinkedIn, and GitHub links point at `/`. File: `src/components/site-footer.tsx`.
 - Workspace nav on a 390px screen lets Messages run past the viewport. See QA-7. The overflow itself is low once sign-out is visible.
@@ -334,12 +335,12 @@ Recommended fix: Merge the pull request #1 sign-in path. It sends a signed-in pe
 Reproduction:
 
 1. Open `/auth/register` with Supabase unset.
-2. Choose student, enter the name Riley Chen, the email `riley.chen.qa42@example.com`, and a password of 8 characters.
+2. Choose student, enter the name Riley Chen, the email `riley.chen.qa48@example.com`, and a password of 8 characters.
 3. Submit and read the workspace shell.
 
 Expected: The shell shows Riley Chen.
 
-Actual: The shell shows "Riley Chen Qa42". `signUp` reads the name field and, in demo mode, calls `writeDemoUser(email)` without it. `resolveUser` builds the display name from the email. Known demo addresses still resolve to Sarah Wilson and Emma Reyes. The same registration on pull request #1, with `riley.chen.pr1c@example.com`, showed "Riley Chen Pr1c".
+Actual: The shell shows "Riley Chen Qa48". `signUp` reads the name field and, in demo mode, calls `writeDemoUser(email)` without it. `resolveUser` builds the display name from the email. Known demo addresses still resolve to Sarah Wilson and Emma Reyes. The same registration on pull request #1, with `riley.chen.pr1d@example.com`, showed "Riley Chen Pr1d".
 
 Recommended fix: Store the submitted name on the demo user cookie. Keep `resolveUser` as the fallback when the name is empty.
 
@@ -353,20 +354,20 @@ Browser retest of that head:
 
 - Sign-in with `next=//example.com`, `///example.com`, `/\example.com`, and `/%2f%2fexample.com` stayed on `/auth/continue`. The last of those decoded the hidden field to `///example.com` and still stayed on the chooser. `https://example.com` stayed there too.
 - Choosing Tutor from `/auth/continue?next=//example.com` opened `/tutor`, not `https://example.com/`.
-- `/auth/callback` on `127.0.0.1:3001` redirected to `http://127.0.0.1:3001/auth/login?error=auth`. `Host: evil.example` redirected to `http://localhost:3001`, so the foreign host was not followed. `X-Forwarded-Host: evil.example` with `X-Forwarded-Proto: https` redirected to `https://127.0.0.1:3001`. The foreign host was not used. The forwarded scheme was. The success path after a code exchange was not executed.
-- Sign-in with `next=/tutor/payments` opened `/auth/continue?next=%2Ftutor%2Fpayments`. Choosing Tutor then opened Payments.
+- `/auth/callback` on `127.0.0.1:3001` redirected to `http://127.0.0.1:3001/auth/login?error=auth`. `Host: evil.example` redirected to `http://localhost:3001`, so the foreign host was not followed. `X-Forwarded-Host: evil.example` with `X-Forwarded-Proto: https` redirected to `https://127.0.0.1:3001`. The foreign host was not used. The forwarded scheme was. The success path after a code exchange was not executed. A callback with no code and `next=//example.com` stayed on `http://127.0.0.1:3001/auth/login?error=auth`.
+- Sign-in with `next=/tutor/payments` opened `/auth/continue?next=%2Ftutor%2Fpayments`. The hidden return path was `/tutor/payments`. Choosing Tutor then opened Payments.
 - Score history bars measured 110, 90, 78, and 105 pixels.
 - At 390×844, Sign out and Switch workspace were visible on `/student/room` (63×26 at x=315, y=145 and 120×26 at x=195, y=145). The Messages link still ran from x=352 with width 83. Nav `scrollWidth` was 447 and `clientWidth` was 390.
 - Monica Keller's row is a link to `/tutor/messages?c=monica`. After the click the open thread was the Wednesday 5:30 reschedule, and Emma's factoring message was not the open thread.
 - Message on Michael Tran is a link to `/tutor/messages` with no conversation id. The open thread was still Emma's ("I got stuck on question 4 of the factoring set.").
-- Registering Riley Chen as `riley.chen.pr1c@example.com` showed "Riley Chen Pr1c".
+- Registering Riley Chen as `riley.chen.pr1d@example.com` showed "Riley Chen Pr1d".
 
 Do not write a second copy of the redirect helper, the callback host, the chooser URL, the score bars, the narrow sign-out, or the demo inbox links.
 
 ## Suggested engineering order
 
 1. Merge pull request #1. This pass rebuilt `2b9de32` and the patch checks passed again. Do not write a second copy.
-2. QA-1 password reset, on top of that merged callback. Include the unconfigured-state message.
+2. QA-1 password reset, on top of that merged callback. Include the unconfigured-state message, and make both the button click and Enter submit that path.
 3. Point Message on a student at that student's conversation id. That remainder of QA-8 is still open on pull request #1.
 4. QA-4 profile read policy, visible send errors, and a two-account Supabase retest.
 5. QA-3 signed-in student data, or an honest sample-data label.
