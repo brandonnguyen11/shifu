@@ -1,14 +1,14 @@
 # QA report
 
 Date: 2026-11-18  
-Commit under test: application commit `5c6c6e14`. This pass started from docs commit `560c725`. The docs commits do not change the app.  
+Commit under test: application commit `5c6c6e14`. This pass started from docs commit `8fffc1b`. The docs commits do not change the app.  
 App: Roomline (`ai-tutoring-concierge`)  
 Build: `next build`, then `next start` on `http://127.0.0.1:3000` (Next.js 16.3.5).  
 Mode: demo cookie session. `NEXT_PUBLIC_SUPABASE_URL`, the publishable key, the anon key, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` are unset, so live Supabase auth and messaging were not executed.
 
 **Release decision: Hold.** See [release-decision.md](./release-decision.md).
 
-This pass reproduced QA-1 through QA-16 on `5c6c6e14`. One extra path of QA-5 was confirmed: the workspace chooser follows `next=//example.com` off the site. Pull request [#1](https://github.com/brandonnguyen11/shifu/pull/1) at `2b9de32` was built and retested again. Its redirect, chooser submit, callback host, chooser URL, score bars, narrow sign-out, and demo inbox selection work. That patch is not in this tree.
+This pass reproduced QA-1 through QA-16 on `5c6c6e14`. Sign-in with `next=//example.com` and `next=///example.com` finished on `https://example.com/`. `/\example.com` and `/%2f%2fexample.com` also sent the browser to `https://example.com/`. The workspace chooser follows `next=//example.com` off the site. Pull request [#1](https://github.com/brandonnguyen11/shifu/pull/1) at `2b9de32` was built and retested again. Its redirect, chooser submit, callback host, chooser URL, score bars, narrow sign-out, and demo inbox selection work. That patch is not in this tree.
 
 ## Checks run
 
@@ -41,6 +41,7 @@ This pass reproduced QA-1 through QA-16 on `5c6c6e14`. One extra path of QA-5 wa
 - Demo messaging says sending is disabled. The student page says "Sending is disabled until live messaging is connected." The tutor page says "Sending is disabled in demo mode."
 - At 390px the home page, the tutor dashboard, the payments page, and the calendar page stay within the viewport (`scrollWidth` 390). The calendar week grid is 720px wide inside a horizontal scroller.
 - `https://example.com` and `javascript:alert(1)` as `next` stay on this site and open the chooser. A value has to start with `/` before the redirect uses it.
+- `/auth/callback` does not follow `Host: evil.example` or `X-Forwarded-Host: evil.example`. Both stay on localhost. See QA-6 for the loopback host bug and the forwarded scheme.
 
 ## Open findings
 
@@ -79,7 +80,7 @@ Reproduction:
 
 Expected: Each control starts that task, or it is clearly unavailable.
 
-Actual: These controls use button styles and are `<span>` elements. Clicking them leaves the URL unchanged. Approve on `/tutor` was clicked this pass and the URL stayed `/tutor`. The same pattern covers Request reschedule, Book a session, Edit availability, Generate with AI, Compose email, Export CSV, Import, New note, and Start session. Message on a student is also a `<span>` and stays on `/tutor/students/michael-tran`.
+Actual: These controls use button styles and are `<span>` elements. Clicking them leaves the URL unchanged. Approve on `/tutor` was clicked this pass and the URL stayed `/tutor`. The same pattern covers Request reschedule, Book a session, Edit availability, Generate with AI, Compose email, Export CSV, Import, and Start session. Message on a student is also a `<span>` and stays on `/tutor/students/michael-tran`.
 
 "Message tutor" on the student room is a real link and opens `/student/messages`. The dashboard control labeled "Add student" is a link to `/tutor/students`. It opens the roster. It does not add a student. The roster then shows another "Add student" control that does nothing.
 
@@ -94,12 +95,12 @@ Recommended fix: Wire the smallest real action, or render the control disabled w
 
 Reproduction:
 
-1. Register a new student. This pass used the name Riley Chen and the email `riley.chen.qa19@example.com`, then opened `/student/room`.
+1. Register a new student. This pass used the name Riley Chen and the email `riley.chen.qa20@example.com`, then opened `/student/room`.
 2. Open Sessions, Assignments, and Progress.
 
 Expected: The room, sessions, assignments, and progress belong to that student, or the page says the content is sample data for Emma Reyes.
 
-Actual: The shell shows "Riley Chen Qa19". The room subtitle is "Algebra II with Sarah Wilson", mastery is 68%, and the work list is the factoring set. Nothing on those pages says the academic record is sample data. Sessions are "with Sarah Wilson". Progress shows Factoring at 61%. The messages page is the one surface that says the thread is a demo. Tutor roster, calendar, assignments, and payments are the same static records for every tutor account. There is no separate student dashboard. `/student` redirects to `/student/room`.
+Actual: The shell shows "Riley Chen Qa20". The room subtitle is "Algebra II with Sarah Wilson", mastery is 68%, and the work list is the factoring set. Nothing on those pages says the academic record is sample data. Sessions are "with Sarah Wilson". Progress shows Factoring at 61%. The messages page is the one surface that says the thread is a demo ("Your conversation with Sarah Wilson (demo)"). Tutor roster, calendar, assignments, and payments are the same static records for every tutor account. There is no separate student dashboard. `/student` redirects to `/student/room`.
 
 Recommended fix: Drive these pages from the signed-in profile, or label every block as sample data until that exists.
 
@@ -137,7 +138,7 @@ Reproduction:
 
 Expected: The person stays on this site.
 
-Actual: Both paths land on `https://example.com/`. The same sign-in sends `///example.com` and `/\example.com` to `https://example.com/` as well. `/auth/login?next=/%2f%2fexample.com` decodes the hidden field to `///example.com` and also opens `https://example.com/`. The hidden `next` field copies the query value through. `signIn` and `chooseWorkspace` treat any string that starts with `/` as safe, and `redirect()` follows a protocol-relative path. The callback uses the same `startsWith("/")` check after a successful code exchange. That success path was not executed. `https://example.com` and `javascript:alert(1)` stay on `/auth/continue`. A double-encoded value whose hidden field remains the literal `/%2f%2fexample.com` stays on this host and 404s.
+Actual: Both paths land on `https://example.com/`. The same sign-in sends `///example.com` and `/\example.com` to `https://example.com/` as well. `/auth/login?next=/%2f%2fexample.com` decodes the hidden field to `///example.com` and also opens `https://example.com/`. The hidden `next` field copies the query value through. `signIn` and `chooseWorkspace` treat any string that starts with `/` as safe, and `redirect()` follows a protocol-relative path. The callback uses the same `startsWith("/")` check after a successful code exchange. That success path was not executed. A callback request with no code and `next=//example.com` stays on the login error page. `https://example.com` and `javascript:alert(1)` stay on `/auth/continue`.
 
 Recommended fix: Use the helper already on pull request #1. This pass confirmed it keeps the cases above, and the chooser submit, on this host. Do not write a second copy.
 
@@ -155,9 +156,9 @@ Reproduction:
 
 Expected: The redirect stays on `http://127.0.0.1:3000`.
 
-Actual: The response is `307` with `location: http://localhost:3000/auth/login?error=auth`. A request with `Host: evil.example` also redirects to `http://localhost:3000`, so an arbitrary Host is not followed. The success path, where the session cookies are set and then the browser changes host, was not executed. Cookies set for `127.0.0.1` are not sent to `localhost`.
+Actual: The response is `307` with `location: http://localhost:3000/auth/login?error=auth`. A request with `Host: evil.example` also redirects to `http://localhost:3000`, so an arbitrary Host is not followed. `X-Forwarded-Host: evil.example` with `X-Forwarded-Proto: https` redirects to `https://localhost:3000/auth/login?error=auth`. The foreign host is not used. The forwarded scheme is. The success path, where the session cookies are set and then the browser changes host, was not executed. Cookies set for `127.0.0.1` are not sent to `localhost`.
 
-On pull request #1, the same request to port 3001 returns `location: http://127.0.0.1:3001/auth/login?error=auth`. `Host: evil.example` returns `http://localhost:3001/auth/login?error=auth`.
+On pull request #1, the same request to port 3001 returns `location: http://127.0.0.1:3001/auth/login?error=auth`. `Host: evil.example` returns `http://localhost:3001/auth/login?error=auth`. The forwarded-host and forwarded-proto pair returns `https://127.0.0.1:3001/auth/login?error=auth`.
 
 Recommended fix: Merge the pull request #1 helper. It builds the redirect from a loopback Host and keeps every other host on the origin Next already reported.
 
@@ -175,9 +176,9 @@ Reproduction:
 
 Expected: Both actions are on screen.
 
-Actual: Both nodes are in the page, and an ancestor has `display: none` below the `lg` breakpoint (`hidden ... lg:block`). There is no other sign-out control in the workspace. The logo goes home and leaves the session cookie in place. At the same width, the student nav `scrollWidth` is 447 and `clientWidth` is 390. The Messages link runs from x=352 to x=435, past the viewport. On `/tutor` at the same width the nav `scrollWidth` is 544, `clientWidth` is 390, and Messages runs from x=365 to x=448. The page `scrollWidth` stays 390. Desktop 1280×900 shows both actions, and Sign out works there.
+Actual: Both nodes are in the page, and an ancestor has `display: none` below the `lg` breakpoint (`hidden ... lg:block`). Measured boxes were 0×0 and hidden. There is no other sign-out control in the workspace. The logo goes home and leaves the session cookie in place. At the same width, the student nav `scrollWidth` is 447 and `clientWidth` is 390. The Messages link runs from x=352 with width 83, past the viewport. On `/tutor` at the same width the nav `scrollWidth` is 544, `clientWidth` is 390, and Messages runs from x=365 with width 83. The page `scrollWidth` stays 390. Desktop 1280×900 shows both actions, and Sign out works there.
 
-On pull request #1, Sign out and Switch workspace at 390px are visible (Sign out from x=315 to x=378, height 26, no hidden ancestor). The page `scrollWidth` stays 390. The Messages link still runs from x=352 to x=435.
+On pull request #1, Sign out and Switch workspace at 390px are visible (Sign out from x=315, width 63, height 26, no hidden ancestor; Switch workspace from x=195, width 120, height 26). The page `scrollWidth` stays 390. The Messages link still runs from x=352 with width 83. The student nav `scrollWidth` is 447.
 
 Recommended fix: Merge the pull request #1 sign-out change. Keep the section nav reachable without a hidden overflow, or make the overflow obvious. The nav overflow remains a low note after sign-out is visible.
 
@@ -198,7 +199,7 @@ Expected: Monica's reschedule message is the open thread. Message on Michael ope
 
 Actual: On this tree, Monica's row is a `<div>` with no link. After the click the URL is still `/tutor/messages` and the open thread is still Emma Reyes ("I got stuck on question 4 of the factoring set."). Monica's preview stays in the list. Message on Michael is a `<span>`. The URL stays `/tutor/students/michael-tran`. Sending is disabled on the demo inbox, and the page says so.
 
-On pull request #1, Monica's row opens `/tutor/messages?c=monica`. Emma's factoring sentence is gone, and "Can we move Wednesday to 5:30 this week?" is on the page. Message on Michael is a link to `/tutor/messages` with no conversation id, and Emma's factoring sentence is the open thread.
+On pull request #1, Monica's row opens `/tutor/messages?c=monica` and "Can we move Wednesday to 5:30 this week?" is the thread. Emma's factoring sentence is gone. Message on Michael is a link to `/tutor/messages` with no conversation id, and Emma's factoring sentence is the open thread.
 
 Recommended fix: Merge the inbox links from pull request #1. Point Message on a student at that student's conversation id (`?c=michael` for Michael Tran).
 
@@ -237,7 +238,7 @@ Reproduction:
 
 Expected: A password check, or copy that this local mode does not use the password. The session cookies are not readable from page script.
 
-Actual: The password `not-the-demo-password` opens the workspace chooser for `sarah@roomline.com`. `signIn` does not read the password in the demo branch. After Tutor is chosen, `document.cookie` contains both `roomline_user` and `roomline_role`. Neither cookie is `httpOnly` (`sameSite: Lax`). The form is prefilled with `demo-password`, which will also be wrong once Supabase is configured unless that is the account's password.
+Actual: The password `not-the-demo-password` opens the workspace chooser for `sarah@roomline.com`. `signIn` does not read the password in the demo branch. After Tutor is chosen, `document.cookie` contains both `roomline_user` and `roomline_role`. Neither cookie is `httpOnly` (`sameSite` Lax). The form is prefilled with `demo-password`, which will also be wrong once Supabase is configured unless that is the account's password.
 
 Recommended fix: Keep the bypass only for local demo, and say that on the form. Set `httpOnly` on the demo cookies.
 
@@ -311,12 +312,13 @@ Reproduction:
 
 1. Open `/auth/login?next=/tutor/payments`.
 2. Sign in. Do not choose a workspace yet.
+3. Separately, sign in with `next=/tutor`.
 
-Expected: The chooser URL is `/auth/continue?next=%2Ftutor%2Fpayments`.
+Expected: The chooser URL is `/auth/continue`, with the return path in that URL.
 
-Actual: On this tree the address bar is `http://127.0.0.1:3000/tutor/payments` while the page heading is "Choose your workspace". The hidden `next` is still `/tutor/payments`. Choosing Tutor then opens Payments, so the return path is kept. A sign-in with no `next` does open `/auth/continue`. `signIn` redirects straight at `next` before a role exists, and the chooser is rendered on that URL.
+Actual: On this tree, `next=/tutor/payments` leaves the address bar at `http://127.0.0.1:3000/tutor/payments` while the page heading is "Choose your workspace". The hidden `next` is still `/tutor/payments`. Choosing Tutor then opens Payments, so the return path is kept. `next=/tutor` does the same: the heading is "Choose your workspace" at `/tutor`. A sign-in with no `next` does open `/auth/continue`. `signIn` redirects straight at `next` before a role exists, and the chooser is rendered on that URL.
 
-On pull request #1 the address after the same sign-in is `http://127.0.0.1:3001/auth/continue?next=%2Ftutor%2Fpayments`. Choosing Tutor opens Payments.
+On pull request #1 the address after sign-in with `next=/tutor/payments` is `http://127.0.0.1:3001/auth/continue?next=%2Ftutor%2Fpayments`. Choosing Tutor opens Payments.
 
 Recommended fix: Merge the pull request #1 sign-in path. It sends a signed-in person with no role to `/auth/continue` and carries `next` in that URL.
 
@@ -341,12 +343,12 @@ Recommended fix: Merge the pull request #1 sign-in path. It sends a signed-in pe
 Reproduction:
 
 1. Open `/auth/register` with Supabase unset.
-2. Choose student, enter the name Riley Chen, the email `riley.chen.qa19@example.com`, and a password of 8 characters.
+2. Choose student, enter the name Riley Chen, the email `riley.chen.qa20@example.com`, and a password of 8 characters.
 3. Submit and read the workspace shell.
 
 Expected: The shell shows Riley Chen.
 
-Actual: On this tree the shell shows "Riley Chen Qa19". `signUp` reads the name field and, in demo mode, calls `writeDemoUser(email)` without it. `resolveUser` builds the display name from the email. On pull request #1, the name Riley Chen and the email `riley.pr1b@example.com` produced the shell name "Riley Pr1b". Known demo addresses still resolve to Sarah Wilson and Emma Reyes.
+Actual: On this tree the shell shows "Riley Chen Qa20". `signUp` reads the name field and, in demo mode, calls `writeDemoUser(email)` without it. `resolveUser` builds the display name from the email. On pull request #1, the name Riley Chen and the email `riley.pr1c@example.com` produced the shell name "Riley Pr1c". Known demo addresses still resolve to Sarah Wilson and Emma Reyes.
 
 Recommended fix: Store the submitted name on the demo user cookie. Keep `resolveUser` as the fallback when the name is empty.
 
@@ -357,10 +359,10 @@ Head: `2b9de32` on `cursor/website-qa-audit-4c9f`. Built with `next build` and s
 | Finding | On `2b9de32` |
 | --- | --- |
 | QA-5 sign-in `next` | Fixed in the browser. `//example.com`, `///example.com`, `/\example.com`, `https://example.com`, `javascript:alert(1)`, and `/%2f%2fexample.com` all finish on `/auth/continue`. The chooser submit with `next=//example.com` finishes on `/tutor`. |
-| QA-6 callback host | Fixed for the missing-code redirect. `127.0.0.1` stays on `127.0.0.1`. `Host: evil.example` stays on localhost. A successful code exchange was not available. |
+| QA-6 callback host | Fixed for the missing-code redirect. `127.0.0.1` stays on `127.0.0.1`. `Host: evil.example` stays on localhost. `X-Forwarded-Host: evil.example` is not followed. A successful code exchange was not available. |
 | QA-14 chooser URL | Fixed. Sign-in with `next=/tutor/payments` opens `/auth/continue?next=%2Ftutor%2Fpayments`, and Tutor then opens Payments. |
 | QA-9 score bars | Fixed. Heights were 110, 90, 78, and 105. |
-| QA-7 sign-out | Fixed for the hidden actions. Both controls are on screen at 390px. The Messages link still runs from x=352 to x=435. |
+| QA-7 sign-out | Fixed for the hidden actions. Both controls are on screen at 390px. The Messages link still runs from x=352 with width 83. |
 | QA-8 inbox | Fixed for the row. Monica opens `?c=monica` and her reschedule text. Message on Michael still opens `/tutor/messages` and Emma's thread. |
 | QA-4 missing secret | Fixed in code. `ensureDemoEnrollment()` returns when the secret is absent. Not run against a project. Profile reads and the composer error remain. |
 | QA-1, QA-2, QA-3, QA-10 through QA-13, QA-15, QA-16 | Still open. QA-1 and QA-16 were reproduced in the browser on this head. |
