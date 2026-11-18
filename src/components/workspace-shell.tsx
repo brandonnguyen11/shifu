@@ -66,8 +66,8 @@ export function WorkspaceShell({
           ))}
         </nav>
 
-        <div className="hidden border-t border-zinc-200 p-3 lg:block">
-          <div className="flex items-center gap-2.5 px-2 py-1.5">
+        <div className="flex items-center justify-between gap-3 border-t border-zinc-200 p-3 lg:block">
+          <div className="flex min-w-0 items-center gap-2.5 px-2 py-1.5">
             <span className="grid size-7 shrink-0 place-items-center rounded-full bg-zinc-100 text-[11px] font-medium text-zinc-700">
               {initials}
             </span>
@@ -78,7 +78,7 @@ export function WorkspaceShell({
               <p className="truncate text-[11px] text-zinc-500">{role}</p>
             </div>
           </div>
-          <div className="mt-1 flex flex-col items-start">
+          <div className="flex shrink-0 items-center lg:mt-1 lg:flex-col lg:items-start">
             <Link
               href="/auth/continue"
               className="rounded-md px-2 py-1 text-[12px] text-zinc-500 transition-colors hover:text-zinc-900"

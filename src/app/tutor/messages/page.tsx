@@ -25,12 +25,15 @@ export default async function MessagesPage({ searchParams }: PageProps) {
     ? await listConversationsForTutor(profile.id)
     : [];
 
-  const activeId =
-    (typeof params.c === "string" ? params.c : undefined) ??
-    liveConversations[0]?.id;
+  const requestedId = typeof params.c === "string" ? params.c : undefined;
+  const mockActive =
+    mockConversations.find((conversation) => conversation.id === requestedId) ??
+    mockConversations[0];
+  const activeId = useLive
+    ? (requestedId ?? liveConversations[0]?.id)
+    : mockActive.id;
 
   const activeLive = liveConversations.find((c) => c.id === activeId);
-  const mockActive = mockConversations[0];
 
   const thread = useLive && activeId && profile
     ? await getConversationThread(activeId, profile.id)
@@ -107,9 +110,10 @@ export default async function MessagesPage({ searchParams }: PageProps) {
                   </Link>
                 ))
               : mockConversations.map((conversation) => (
-                  <div
+                  <Link
                     key={conversation.id}
-                    className={`flex gap-3 px-4 py-3.5 ${
+                    href={`/tutor/messages?c=${conversation.id}`}
+                    className={`flex gap-3 px-4 py-3.5 transition-colors hover:bg-zinc-50 ${
                       conversation.id === mockActive.id ? "bg-zinc-50" : ""
                     }`}
                   >
@@ -127,7 +131,7 @@ export default async function MessagesPage({ searchParams }: PageProps) {
                         {conversation.preview}
                       </p>
                     </div>
-                  </div>
+                  </Link>
                 ))}
           </div>
         </Panel>

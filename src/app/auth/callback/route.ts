@@ -2,10 +2,13 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse, type NextRequest } from "next/server";
 
+import { publicOrigin, safeInternalPath } from "@/lib/safe-path";
+
 export async function GET(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
+  const origin = publicOrigin(request.url, request.headers.get("host"));
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/auth/continue";
 
@@ -32,6 +35,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/auth/login?error=auth`);
   }
 
-  const safeNext = next.startsWith("/") ? next : "/auth/continue";
+  const safeNext = safeInternalPath(next, "/auth/continue");
   return NextResponse.redirect(`${origin}${safeNext}`);
 }

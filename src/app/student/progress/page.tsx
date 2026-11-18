@@ -64,14 +64,19 @@ export default function StudentProgressPage() {
           <div className="p-4">
             <div className="flex h-44 items-end gap-4">
               {scoreHistory.map((entry) => (
-                <div key={entry.label} className="flex flex-1 flex-col items-center gap-2">
+                <div
+                  key={entry.label}
+                  className="flex h-full min-w-0 flex-1 flex-col items-center gap-2"
+                >
                   <span className="text-[12px] text-zinc-900 tabular-nums">
                     {entry.score}%
                   </span>
-                  <div
-                    className="w-full rounded-t-md bg-zinc-900"
-                    style={{ height: `${entry.score}%` }}
-                  />
+                  <div className="flex w-full flex-1 items-end">
+                    <div
+                      className="w-full rounded-t-md bg-zinc-900"
+                      style={{ height: `${entry.score}%` }}
+                    />
+                  </div>
                   <span className="text-[11px] text-zinc-400">{entry.label}</span>
                 </div>
               ))}

@@ -32,9 +32,12 @@ export default async function StudentDetailPage({
       subtitle={`${student.subject} · ${student.grade} · Parent: ${student.parent}`}
       actions={
         <>
-          <span className={buttonVariants({ variant: "outline", size: "sm" })}>
+          <Link
+            href="/tutor/messages"
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
             Message
-          </span>
+          </Link>
           <span className={buttonVariants({ size: "sm" })}>Start session</span>
         </>
       }
