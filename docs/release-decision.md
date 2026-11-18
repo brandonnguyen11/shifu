@@ -3,7 +3,7 @@
 **Hold**
 
 Date: 2026-11-18  
-Scope: full site retest of the current Roomline app. This pass started from docs commit `b834295`. The application files match `5c6c6e14` and were exercised in demo cookie mode on `http://127.0.0.1:3000`. Pull request #1 at `2b9de32` was built and retested on `http://127.0.0.1:3001`. Evidence is in [qa-report.md](./qa-report.md).
+Scope: full site retest of the current Roomline app. This pass started from docs commit `529d76d`. The application files match `5c6c6e14` and were exercised in demo cookie mode on `http://127.0.0.1:3000`. Pull request #1 at `2b9de32` was built and retested on `http://127.0.0.1:3001`. Evidence is in [qa-report.md](./qa-report.md).
 
 ## Why this is Hold
 
@@ -11,7 +11,7 @@ High-severity issues are open on this tree, and the Supabase auth and messaging 
 
 - Password reset does not send email (QA-1). Clicking "Send reset link" for `sarah@roomline.com`, pressing Enter, and a native form submit all go to `/auth/forgot-password?email=sarah%40roomline.com` and still say a link will be emailed. The form has no method or action, so the browser submits GET.
 - Join session, start assignment, grading, scheduling, and payment actions do not run. Approve on the dashboard is a span and stays on `/tutor`. The roster Add student control does nothing. The dashboard control labeled Add student only opens the roster (QA-2). Message tutor does open the student messages page.
-- The student room shows Emma Reyes's record for every signed-in student (QA-3). A new student's shell name, Riley Chen Qa49, and Emma's class record were on screen together.
+- The student room shows Emma Reyes's record for every signed-in student (QA-3). A new student's shell name, Riley Chen Qa51, and Emma's class record were on screen together.
 - Live sign-in, email confirmation, and message delivery were not tested. On this tree the profiles policy lets a user read only their own row, and a missing service secret can throw after a successful password check (QA-4).
 - Sign-in with `next=//example.com` left this host and requested `https://example.com/`. `///example.com`, `/\example.com`, and `/%2f%2fexample.com` did the same. The last of those decodes the hidden field to `///example.com`. Submitting the workspace chooser with `next=//example.com` also requested `https://example.com/` (QA-5).
 - `/auth/callback` on `127.0.0.1` redirects to `http://localhost:3000/auth/login?error=auth` (QA-6). A `Host: evil.example` request also lands on `localhost`. `X-Forwarded-Host: evil.example` is not followed. With `X-Forwarded-Proto: https` the scheme becomes `https` and the host stays `localhost`.
@@ -25,7 +25,7 @@ The open highs are core flows, and product has not accepted them. That keeps the
 
 ## Pull request #1
 
-That head is still `2b9de32`. This pass rebuilt it. `npm test` passed 4 safe-path tests, and the browser retest passed the off-site `next` values, the chooser submit, the callback host, the chooser URL, the score bars, narrow sign-out, and Monica's inbox row. Message on a student still opened Emma's thread. Registering Riley Chen as `riley.chen.pr1e@example.com` showed "Riley Chen Pr1e". Merging it does not by itself make this app ready.
+That head is still `2b9de32`. This pass rebuilt it. `npm test` passed 4 safe-path tests, and the browser retest passed the off-site `next` values, the chooser submit, the callback host, the chooser URL, the score bars, narrow sign-out, and Monica's inbox row. Message on a student still opened Emma's thread. Registering Riley Chen as `riley.chen.pr1f@example.com` showed "Riley Chen Pr1f". Merging it does not by itself make this app ready.
 
 Still open after that merge: password reset, unwired actions, the sample student room, live messaging, the Message link on a student, demo passwords, mobile header navigation, roster search, conflicting counts, the typed registration name, and the narrow nav overflow.
 
