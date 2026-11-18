@@ -4,7 +4,7 @@ Order is the order to build. High QA findings come before new product ideas. Det
 
 ## Now
 
-1. **Merge the retested host patch.** QA-5 and QA-6. High. On this tree, `next=//example.com` and `next=/%2f%2fexample.com` open `https://example.com/`. Submitting the workspace chooser with `next=//example.com` does the same. `/auth/callback` on `127.0.0.1` redirects to `localhost`. Pull request #1 at `2b9de32` passed another browser retest for those cases, including the chooser submit, plus the chooser URL, the score bars, narrow sign-out, and the Monica inbox row. Merge that pull request. Do not write a second copy.
+1. **Merge the retested host patch.** QA-5 and QA-6. High. On this tree, `next=//example.com`, `///example.com`, `/\example.com`, and `next=/%2f%2fexample.com` open `https://example.com/`. Submitting the workspace chooser with `next=//example.com` does the same. `/auth/callback` on `127.0.0.1` redirects to `localhost`. A foreign Host is not followed. Pull request #1 at `2b9de32` passed another browser retest for those cases, including the chooser submit, plus the chooser URL, the score bars, narrow sign-out, and the Monica inbox row. Merge that pull request. Do not write a second copy.
 2. **Password reset that tells the truth.** Spec: `docs/spec.md`. QA-1. High. Starts after item 1 is merged, because the recovery link uses the callback. The pull request #1 retest passed, so this slice is no longer waiting on an untested patch.
 3. **Supabase messaging retest.** Let enrollment members read each other's display name, skip admin enrollment when the secret key is missing, show a send failure in the composer, and prove a message sent by Sarah is visible to Emma. QA-4. High. The missing-secret guard is already in pull request #1. The profile read policy and the composer error are not. The runtime half is blocked on project credentials.
 4. **Student room matches the signed-in student.** Or label the current pages as Emma Reyes's sample room until that data exists. QA-3. High.
@@ -19,7 +19,7 @@ Order is the order to build. High QA findings come before new product ideas. Det
 10. **Narrow public navigation.** About, Pricing, and Trust reachable from the header below the `md` breakpoint. QA-11. Medium.
 11. **Roster search and filters.** Filter the list or remove the controls. QA-12. Medium.
 12. **One set of sample numbers.** Session times, roster size, grading count, and revenue stop contradicting the rows on the page. QA-13. Medium. The retest also showed dashboard "Awaiting review" as 9 against assignments "Needs grading" of 2, and calendar "Booked this week" as 7 while one of those seven slots is an open block.
-13. **Chooser URL.** On this tree, a return path to `/tutor/payments` shows the chooser at `/tutor/payments`. Choosing Tutor still opens payments. QA-14. Medium. Pull request #1 opens `/auth/continue?next=%2Ftutor%2Fpayments` and then Payments. Merge that change with item 1.
+13. **Chooser URL.** On this tree, a return path to `/tutor` or `/tutor/payments` shows the chooser at that protected URL. Choosing Tutor still opens the return path. QA-14. Medium. Pull request #1 opens `/auth/continue?next=%2Ftutor%2Fpayments` and then Payments. Merge that change with item 1.
 
 ## Later
 
