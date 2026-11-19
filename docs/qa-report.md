@@ -6,7 +6,7 @@ Site under test: application code on `main` at `5c6c6e14`. This checkout’s `sr
 Browser: Chrome headless at 1280×900 and 390×844.  
 Mode: demo cookie session. `NEXT_PUBLIC_SUPABASE_URL`, the publishable key, and the secret are unset, so live auth and messaging could not be executed.
 
-This pass used `riley.chen.qa191119t1434@example.com` (typed name Riley Chen), `tutor.qa191119t1434@example.com` (typed name Tutor Audit), `chooser.qa191119t1434@example.com`, `short.qa191119t1434@example.com`, `offsite.qa191119t1434.0` through `offsite.qa191119t1434.9@example.com`, and `sarah@roomline.com`. A second tutor registration, `tutor.qa191119t1434b@example.com`, was used only to read the full assignments page and count Approve controls. The chooser check used a clean browser context with no prior role cookie. Narrow layout used the Riley room and the tutor calendar and dashboard at 390×844.
+This pass used `riley.chen.qa191119t1443@example.com` (typed name Riley Chen), `tutor.qa191119t1443@example.com` (typed name Tutor Audit), `chooser.qa191119t1443@example.com`, `short.qa191119t1443@example.com`, `offsite.qa191119t1443.0` through `offsite.qa191119t1443.9@example.com`, and `sarah@roomline.com`. The chooser check used a clean browser context with no cookies. Narrow layout used the Riley room and the tutor calendar and dashboard at 390×844. One tutor account was enough to read the assignments page.
 
 Pull request #1 is still open at `2b9de32` on `cursor/website-qa-audit-4c9f`. This pass did not boot that branch. Its forgot-password file is the same blob as `main` (`902f5789eeef65a4c7b7270fc633abb1e8bd1c55`). Message on a student is an anchor to `/tutor/messages` with no conversation id. `safeInternalPath` from that commit was run locally as a function, not in the browser. It returns the fallback for `//example.com`, `///example.com`, `/\example.com`, `https://example.com`, `javascript:alert(1)`, and `%2f%2fexample.com`. It returns the literal path `/%2f%2fexample.com` unchanged. The login query `next=/%2f%2fexample.com` is decoded to the hidden value `///example.com` before submit, and that decoded value is one the function rejects. `continueTarget("/tutor/payments")` returns `/auth/continue?next=%2Ftutor%2Fpayments`. `publicOrigin("http://localhost:3000", "127.0.0.1:3000")` returns `http://127.0.0.1:3000`. The same helper keeps `http://localhost:3000` when `Host` is `evil.example`.
 
@@ -23,16 +23,16 @@ Pull request #1 is still open at `2b9de32` on `cursor/website-qa-audit-4c9f`. Th
 | Browser, desktop 1280×900 and mobile 390×844 | Public pages, auth, both workspaces, messaging, empty states, and narrow layout |
 | Supabase sign-in, email confirmation, password-reset delivery, live send/read | Not run. No project credentials. |
 
-Pages checked for script errors (`/`, `/student/room`, `/tutor/payments`, `/tutor/messages`) logged none. `/tutor/students/does-not-exist` stayed on that URL, returned “404 / This page could not be found.”, and the console line was the 404 response itself.
+The student workspace recorded no script errors. `/`, `/tutor/payments`, and `/tutor/messages` logged none. `/tutor/students/does-not-exist` stayed on that URL, returned “404 / This page could not be found.”, and the console line was the 404 response itself.
 
 ## What works
 
 - Public pages return 200: `/`, `/about`, `/pricing`, `/trust`, `/auth/login`, `/auth/register`, `/auth/forgot-password`.
-- Desktop header links are About, Pricing, and Trust & FERPA. About has `mission`, `approach`, `careers`, and `contact`. Trust has `ferpa`, `coppa`, `privacy`, `terms`, `security`, `dpa`, `subprocessors`, and `status`. Home has `demo`.
+- Desktop header links are About, Pricing, and Trust & FERPA. About has `mission`, `approach`, `careers`, and `contact`. Trust has `ferpa`, `coppa`, `privacy`, `terms`, `security`, `dpa`, `subprocessors`, and `status`. Home has `demo`. Home “Enter tutor workspace” points at `/tutor` and “Open student room” points at `/student/room`.
 - Pricing “Start free” and “Start 14-day trial” are `/tutor`. Signed out, clicking Start free ends at `/auth/login?next=%2Ftutor`. Fetch recorded `307` to that login URL for `/tutor`. “Talk to us” is `/about#contact`.
 - Every tutor and student route redirects a signed-out visitor to `/auth/login` and keeps the path in `next`. Fetch recorded `307` for `/tutor`, `/tutor/students`, `/tutor/students/emma-reyes`, `/tutor/calendar`, `/tutor/messages`, `/tutor/assignments`, `/tutor/payments`, `/student`, `/student/room`, `/student/sessions`, `/student/messages`, `/student/assignments`, and `/student/progress`.
 - Login blocks an address without `@` in the browser (“Please include an '@' in the email address. 'not-an-email' is missing an '@'.”). With browser validation turned off, the server returns `/auth/login?error=email` (`x-action-redirect: /auth/login?error=email;push`) and “Enter a valid email address to continue.”
-- Register rejects `short7` for `short.qa191119t1434@example.com` with `/auth/register?error=password` and “Use a password of at least 8 characters.” `eightchr` is accepted and opens the student room (`x-action-redirect: /student/room;push`).
+- Register rejects `short7` for `short.qa191119t1443@example.com` with `/auth/register?error=password` and “Use a password of at least 8 characters.” `eightchr` is accepted and opens the student room (`x-action-redirect: /student/room;push`).
 - Choosing a workspace sets the role. A student who opens `/tutor/payments` returns to `/student/room`. A tutor who opens `/student/room` returns to `/tutor`. `/student` for a signed-in student ends at `/student/room`.
 - Sign out from the desktop student room returns to `/`. The next visit to `/tutor` asks for sign-in again (`/auth/login?next=%2Ftutor`). At 1280px the Sign out box is 62.7×26.
 - `/tutor/students/does-not-exist` renders the 404 page for a signed-in tutor and the address stays on that path.
@@ -102,11 +102,11 @@ Recommended fix: Use the path check already on pull request #1 (`src/lib/safe-pa
 Reproduction:
 
 1. Open `/auth/login?next=/tutor/payments` with no session and no role cookie.
-2. Sign in with `chooser.qa191119t1434@example.com` and any password.
+2. Sign in with `chooser.qa191119t1443@example.com` and any password.
 
 Expected: The chooser URL is `/auth/continue?next=%2Ftutor%2Fpayments`. Choosing Tutor opens payments.
 
-Actual: The login action redirect is `/tutor/payments;push`. The address bar stays `/tutor/payments` while the heading is “Choose your workspace”. Both hidden `next` fields say `/tutor/payments`. A reload moves to `/auth/continue?next=%2Ftutor%2Fpayments`. Choosing Tutor from that URL sends `x-action-redirect: /tutor/payments;push` and opens `/tutor/payments` with the heading “Payments”.
+Actual: The login action redirect is `/tutor/payments;push`. The address bar stays `/tutor/payments` while the heading is “Choose your workspace”. Both hidden `next` fields say `/tutor/payments`. The only cookie is `roomline_user`. A reload moves to `/auth/continue?next=%2Ftutor%2Fpayments`. Choosing Tutor from that URL sends `x-action-redirect: /tutor/payments;push` and opens `/tutor/payments` with the heading “Payments”.
 
 Recommended fix: Land the chooser with `continueTarget` from pull request #1. A local function run of that helper returns `/auth/continue?next=%2Ftutor%2Fpayments` for `/tutor/payments`.
 
@@ -162,7 +162,7 @@ Reproduction:
 
 Expected: Those pages belong to the signed-in student, or they say the content is sample data.
 
-Actual: Registering `riley.chen.qa191119t1434@example.com` as Riley Chen opened `/student/room`. The shell shows “Riley Chen Qa191119t1434”. The room subtitle is “Algebra II with Sarah Wilson”, with mastery 68% and attendance 96%. Sessions lists “Today, 4:00 PM” for factoring. Progress says overall mastery 68% and focus area Factoring. The room, sessions, assignments, and progress pages do not say the content is sample data. Messages does say “(demo)”. Tutor roster, calendar, assignments, and payments are the same static records for `tutor.qa191119t1434@example.com`. Tutor messages is the page that says “(demo data)”.
+Actual: Registering `riley.chen.qa191119t1443@example.com` as Riley Chen opened `/student/room`. The shell shows “Riley Chen Qa191119t1443”. The room subtitle is “Algebra II with Sarah Wilson”, with mastery 68% and attendance 96%. Sessions lists “Today, 4:00 PM” for factoring. Progress says overall mastery 68% and focus area Factoring. The room, sessions, assignments, and progress pages do not say the content is sample data. Messages does say “(demo)”. Tutor roster, calendar, assignments, and payments are the same static records for `tutor.qa191119t1443@example.com`. Tutor messages is the page that says “(demo data)”.
 
 Recommended fix: Drive the pages from the signed-in profile, or label every block as sample data.
 
@@ -198,7 +198,7 @@ Reproduction:
 
 Expected: Both are on screen.
 
-Actual: The account block’s class is `hidden ... lg:block`. The Sign out button’s box is 0×0 on the student room (`riley.chen.qa191119t1434@example.com`), on the tutor dashboard, and on the tutor calendar. Switch workspace is in that same block and its box is 0×0 on the student room, the tutor dashboard, and the tutor calendar. At 1280px, Sign out is 62.7×26 and returns home.
+Actual: The account block’s class is `hidden border-t border-zinc-200 p-3 lg:block`. The Sign out button’s box is 0×0 on the student room (`riley.chen.qa191119t1443@example.com`), on the tutor dashboard, and on the tutor calendar. Switch workspace is in that same block and its box is 0×0 on the student room, the tutor dashboard, and the tutor calendar. At 1280px, Sign out is 62.7×26 and returns home.
 
 Recommended fix: Land the shell change from pull request #1.
 
@@ -254,7 +254,7 @@ Reproduction:
 
 Expected: Those pages are reachable from the header.
 
-Actual: The header nav computes to `display: none` below `md`. The About link’s box is 0×0. Sign in and Get started stay visible. About remains in the footer. The home page does not overflow (`scrollWidth` 390, `clientWidth` 390).
+Actual: The header nav computes to `display: none` below `md`. Its class is `absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 md:flex`. The About link’s box is 0×0. Sign in and Get started stay visible. About remains in the footer. The home page does not overflow (`scrollWidth` 390, `clientWidth` 390).
 
 Recommended fix: Add a compact menu for the three header links below `md`.
 
@@ -313,7 +313,7 @@ Reproduction:
 
 Expected: The bars for 88, 72, 62, and 84 are visible.
 
-Actual: Each bar has `height: 88%`, `72%`, `62%`, and `84%`, and a used height of 0px.
+Actual: Each bar has `height: 88%`, `72%`, `62%`, and `84%`, and a used height of 0px. The percentages and dates are on screen. The bars are not.
 
 Recommended fix: Land the progress layout from pull request #1.
 
@@ -323,8 +323,8 @@ Recommended fix: Land the progress layout from pull request #1.
 - Status: Open
 
 - Register placeholder says “At least 12 characters” and the server accepts 8. File: `src/app/auth/register/page.tsx`.
-- The name typed at registration is not the name in the shell. Registering “Riley Chen” as `riley.chen.qa191119t1434@example.com` showed “Riley Chen Qa191119t1434”. Registering “Tutor Audit” showed “Tutor Qa191119t1434”. Demo sign-up stores `resolveUser(email)` and ignores the name field. File: `src/app/auth/actions.ts`.
-- `/auth/continue?error=role` does not render an error. The page for `tutor.qa191119t1434@example.com` showed the chooser and no error sentence. File: `src/app/auth/continue/page.tsx`.
+- The name typed at registration is not the name in the shell. Registering “Riley Chen” as `riley.chen.qa191119t1443@example.com` showed “Riley Chen Qa191119t1443”. Registering “Tutor Audit” showed “Tutor Qa191119t1443”. Demo sign-up stores `resolveUser(email)` and ignores the name field. File: `src/app/auth/actions.ts`.
+- `/auth/continue?error=role` does not render an error. The page for `chooser.qa191119t1443@example.com` showed the chooser and no error sentence. File: `src/app/auth/continue/page.tsx`.
 - `next build` warns that `src/middleware.ts` should move to the `proxy` convention. The signed-out redirects under test were correct.
 - Workspace nav at 390px scrolls horizontally. Student nav `scrollWidth` 447 and `clientWidth` 390. The Messages link runs from x=352 to x=435. Tutor nav `scrollWidth` is 544 and `clientWidth` is 390. The Messages link runs from x=365 to x=448.
 - Demo cookies `roomline_user` and `roomline_role` are not `httpOnly`. After choosing Tutor, page script could read both. File: `src/app/auth/actions.ts`.
