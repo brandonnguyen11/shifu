@@ -1,14 +1,14 @@
 # QA report
 
 Date: 2026-11-19  
-Commit under test: application commit `5c6c6e14`. This pass started from docs commit `466a825`. The app files were not changed.  
+Commit under test: application commit `5c6c6e14`. This pass started from docs commit `17ec118`. The app files were not changed.  
 App: Roomline (`ai-tutoring-concierge`)  
 Build: `next build`, then `next start` on `http://127.0.0.1:3000` (Next.js 16.3.5).  
 Mode: demo cookie session. The server process has no `NEXT_PUBLIC_SUPABASE_URL`, publishable key, anon key, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, or `SUPABASE_SERVICE_ROLE_KEY`. The repo has `.env.example` and no `.env`. Live Supabase auth and messaging were not executed.
 
 **Release decision: Hold.** See [release-decision.md](./release-decision.md).
 
-This pass reproduced QA-1 through QA-16 on `5c6c6e14`. Sign-in with `next=//example.com`, `next=///example.com`, and `next=/\example.com` requested `http://example.com/` and landed on `https://example.com/`. `/auth/login?next=/%2f%2fexample.com` decoded the hidden field to `///example.com` and did the same. The workspace chooser follows `next=//example.com` off the site. Clicking Send reset link, pressing Enter, and a native `requestSubmit()` all put the address in the query string and still claim a reset email will be sent. A new tutor account still sees Emma Reyes's roster. Pull request [#1](https://github.com/brandonnguyen11/shifu/pull/1) is still open at `2b9de32`. This pass built that head, ran its `npm test` (4 passing), and repeated the browser checks on `http://127.0.0.1:3001`. Curl read the callback `Location` headers. The patch still holds. Message on a student still opens Emma's thread, and demo registration still drops the typed name. Password reset on that head still puts the address in the query string.
+This pass reproduced QA-1 through QA-16 on `5c6c6e14`. Sign-in with `next=//example.com`, `next=///example.com`, and `next=/\example.com` requested `http://example.com/` and landed on `https://example.com/`. `/auth/login?next=/%2f%2fexample.com` decoded the hidden field to `///example.com` and did the same. The workspace chooser follows `next=//example.com` off the site. Clicking Send reset link, pressing Enter, and a native `requestSubmit()` all put the address in the query string and still claim a reset email will be sent. A new tutor account still sees Emma Reyes's roster. Pull request [#1](https://github.com/brandonnguyen11/shifu/pull/1) is still open at `2b9de32`. This pass built that head, ran its `npm test` (4 passing) and `npm run lint`, and repeated the browser checks on `http://127.0.0.1:3001`. Curl read the callback `Location` headers. The patch still holds. Message on a student still opens Emma's thread, and demo registration still drops the typed name. Password reset on that head still puts the address in the query string.
 
 ## Checks run
 
@@ -21,7 +21,7 @@ This pass reproduced QA-1 through QA-16 on `5c6c6e14`. Sign-in with `next=//exam
 | `npm test` | `5c6c6e14` | Not configured. `npm test` exits with "Missing script: test". This tree has no test files. |
 | Browser pass, desktop 1280×900 and mobile 390×844 | `5c6c6e14` | Done with headless Chrome against the production server. Public pages, demo auth, both workspaces, messaging, empty states, and the narrow layout were exercised. Redirect cases that leave the site used a fresh browser context. |
 | Supabase sign-in, email confirmation, password-reset delivery, and a message sent by one account and read by the other | `5c6c6e14` | Not run. This environment has no project credentials. |
-| Pull request #1 head `2b9de32` | rebuilt | `npm test` passed 4 tests in `src/lib/safe-path.test.ts`. `npm run build` passed, with the same middleware warning. Browser retest on `http://127.0.0.1:3001` is below. Callback hosts were read with curl. |
+| Pull request #1 head `2b9de32` | rebuilt | `npm test` passed 4 tests in `src/lib/safe-path.test.ts`. `npm run lint` passed. `npm run build` passed, with the same middleware warning. Browser retest on `http://127.0.0.1:3001` is below. Callback hosts were read with curl. |
 
 ## What works
 
@@ -31,7 +31,7 @@ This pass reproduced QA-1 through QA-16 on `5c6c6e14`. Sign-in with `next=//exam
 - Register rejects a 7-character password (`/auth/register?error=password`, copy says at least 8 characters). With the browser email check turned off, `not-an-email` reaches `/auth/register?error=email`.
 - A new student account lands on `/student/room`. `/student` then redirects to `/student/room`. "Message tutor" is a link and opens `/student/messages`.
 - Choosing a workspace sets the role. A student who opens `/tutor` returns to `/student/room`. A tutor who opens `/student/room` returns to `/tutor`.
-- Sign out on a desktop-width screen returns to `/`. The `roomline_` cookies are gone. A later visit to `/student/room` with no session requires sign-in again. On `/tutor/payments` at 1280×900 the Sign out button is inside the viewport (63×26 at x=12, y=862). Clicking it cleared those cookies, and a later visit to `/tutor/payments` required sign-in.
+- Sign out on a desktop-width screen returns to `/`. The `roomline_` cookies are gone. A later visit to `/student/room` with no session requires sign-in again. On `/tutor/payments` at 1280×900 the Sign out button is inside the viewport (63×26 at x=12, y=862). Clicking it returned to `/` and cleared those cookies, and a later visit to `/tutor/payments` required sign-in.
 - A sign-in with no `next`, in a fresh browser context, opens the chooser at `/auth/continue`. The password `not-the-demo-password` is accepted.
 - `/tutor/students/does-not-exist` returns 404. After the page finishes loading it reads "404" and "This page could not be found."
 - Michael Tran's detail shows "No assessments yet", "Nothing assigned yet", "Not scheduled", and "Trial completed".
@@ -95,13 +95,13 @@ Recommended fix: Wire the smallest real action, or render the control disabled w
 
 Reproduction:
 
-1. Register a new student. This pass used the name Riley Chen, the email `riley.chen.qa5258061@example.com`, and the password `password1`, then opened `/student/room`.
+1. Register a new student. This pass used the name Riley Chen, the email `riley.chen.qa5834594@example.com`, and the password `password1`, then opened `/student/room`.
 2. Open Sessions, Assignments, and Progress.
-3. Register a new tutor. This pass used Jordan Lee, `jordan.lee.qa5258061@example.com`, and the password `password1`, then opened `/tutor`.
+3. Register a new tutor. This pass used Jordan Lee, `jordan.lee.qa5834594@example.com`, and the password `password1`, then opened `/tutor`.
 
 Expected: The room, sessions, assignments, and progress belong to that student, or the page says the content is sample data for Emma Reyes. A new tutor does not inherit another tutor's roster.
 
-Actual: The shell shows "Riley Chen Qa5258061". The room subtitle is "Algebra II with Sarah Wilson", mastery is 68%, and the next session is today at 4:00 PM. Nothing on the room or progress page says the academic record is sample data. Progress shows Factoring. The messages page is the one surface that says the thread is a demo. The new tutor's shell shows "Jordan Lee Qa5258061", and the dashboard is still Sunday, September 13, with Emma Reyes at 9:00 AM, Michael Tran as First session, and cards reading Sessions today 4, Active students 18, and Awaiting review 9. Tutor roster, calendar, assignments, and payments are the same static records for every tutor account. There is no separate student dashboard. `/student` redirects to `/student/room`. Registering `emma@roomline.com` with the typed name "Not Emma" showed Emma Reyes, and `sarah@roomline.com` with the typed name "Not Sarah" showed Sarah Wilson. A student who opens `/tutor` returns to `/student/room`. A tutor who opens `/student/room` stays on `/tutor`.
+Actual: The shell shows "Riley Chen Qa5834594". The room subtitle is "Algebra II with Sarah Wilson", mastery is 68%, and the next session is today at 4:00 PM. Nothing on the room or progress page says the academic record is sample data. Progress shows Factoring. The messages page is the one surface that says the thread is a demo. The new tutor's shell shows "Jordan Lee Qa5834594", and the dashboard is still Sunday, September 13, with Emma Reyes at 9:00 AM, Michael Tran as First session, and cards reading Sessions today 4, Active students 18, and Awaiting review 9. Tutor roster, calendar, assignments, and payments are the same static records for every tutor account. There is no separate student dashboard. `/student` redirects to `/student/room`. Registering `emma@roomline.com` with the typed name "Not Emma" showed Emma Reyes, and `sarah@roomline.com` with the typed name "Not Sarah" showed Sarah Wilson. A student who opens `/tutor` returns to `/student/room`. A tutor who opens `/student/room` stays on `/tutor`.
 
 Recommended fix: Drive these pages from the signed-in profile, or label every block as sample data until that exists.
 
@@ -175,7 +175,7 @@ Reproduction:
 
 Expected: Both actions are on screen.
 
-Actual: Both nodes are in the page, and an ancestor has `display: none` below the `lg` breakpoint (`hidden ... lg:block`). Measured boxes were 0×0 and hidden. There is no other sign-out control in the workspace. The logo goes home and leaves the session cookie in place. At the same width, the student nav `scrollWidth` is 447 and `clientWidth` is 390. The Messages link runs from x=352, y=77, with width 83, past the viewport. On the tutor calendar at the same width the nav `scrollWidth` is 544, `clientWidth` is 390, Messages runs from x=365 with width 83, and Payments runs from x=452 with width 80. The page `scrollWidth` stays 390. Desktop 1280×900 shows both actions. On `/tutor/payments` Sign out is inside the viewport, and Sign out clears the session.
+Actual: Both nodes are in the page, and an ancestor has `display: none` below the `lg` breakpoint (`hidden ... lg:block`). Measured boxes were 0×0 and hidden. There is no other sign-out control in the workspace. The logo goes home and leaves the session cookie in place. At the same width, the student nav `scrollWidth` is 447 and `clientWidth` is 390. The Messages link runs from x=352, y=77, with width 83, past the viewport. On the tutor calendar at the same width the nav `scrollWidth` is 544, `clientWidth` is 390, Messages runs from x=365 with width 83, and Payments runs from x=452 with width 80. The page `scrollWidth` stays 390. Desktop 1280×900 shows both actions. On `/tutor/payments` Sign out is inside the viewport, and Sign out clears the session and returns to `/`.
 
 Recommended fix: Merge the pull request #1 sign-out change. Keep the section nav reachable without a hidden overflow, or make the overflow obvious. The nav overflow remains a low note after sign-out is visible.
 
@@ -286,7 +286,7 @@ Confirmed on screen this pass:
 - The dashboard says 18 active students. The roster subtitle says "5 students on your roster". The dashboard awaiting-review count is 9.
 - Assignments says 2 need grading. The grading queue includes the note "Needs your read on proof 3". In the assignment list on the same page, Noah's set is "In progress".
 - Payments says $3,240 this month and outstanding "$190" for "2 unpaid invoices". The rows on screen are four Paid labels (Ava Mitchell, Michael Tran, Emma Reyes, Noah Patel), one Refunded (James Keller), and one Failed (Emma Reyes). None of those rows is an unpaid invoice.
-- Calendar says booked this week and shows one slot labeled "Open block". At 390px that grid is 720px wide inside a scroller whose client width is 340. The page itself stays at 390.
+- Calendar says "Booked this week" with the value 7, and "Open blocks" with the value 5. The week grid shows one slot labeled "Open block". At 390px that grid is 720px wide inside a scroller whose client width is 340. The page itself stays at 390.
 
 Expected: One schedule and one set of counts.
 
@@ -319,12 +319,12 @@ Recommended fix: Merge the pull request #1 sign-in path. It sends a signed-in pe
 - Status: Open. Reproduced this pass.
 
 - Register placeholder says "At least 12 characters" and the server accepts 8. The error for a shorter password says "Use a password of at least 8 characters." A 7-character password stayed on `/auth/register?error=password`. File: `src/app/auth/register/page.tsx`.
-- `/auth/continue?error=role`, while signed in as `sarah@roomline.com`, does not render an error. The chooser heading is "Choose your workspace" and the page does not say the role update failed. File: `src/app/auth/continue/page.tsx`.
+- `/auth/continue?error=role`, while signed in, does not render an error. This pass used `flow.tutor.1280.5834594@example.com`. The chooser heading is "Choose your workspace" and the page does not say the role update failed. File: `src/app/auth/continue/page.tsx`.
 - `next build` warns that `src/middleware.ts` should move to the `proxy` convention. The role redirects under test were correct.
 - Footer X, LinkedIn, and GitHub links point at `/`. File: `src/components/site-footer.tsx`.
 - The student messages page labels Sarah Wilson "Online" while the subtitle says the thread is a demo and sending is disabled. File: `src/app/student/messages/page.tsx`.
 - Workspace nav on a 390px screen lets Messages run past the viewport. See QA-7. The overflow itself is low once sign-out is visible.
-- On `/student/room` at 1280×900, Sign out is drawn at x=12, y=964, below the first screen. On `/student/progress` the same control is inside the viewport at x=12, y=862. Clicking it returned to `/`, cleared the `roomline_` cookies, and a later visit to `/student/room` required sign-in. On `/tutor/payments` the same control is inside the viewport, at x=12, y=862, and clicking it cleared the cookies. A later visit required sign-in. File: `src/components/workspace-shell.tsx`.
+- On `/student/room` at 1280×900, Sign out is drawn at x=12, y=964, below the first screen. On `/student/progress` the same control is inside the viewport at x=12, y=862. Clicking it returned to `/`, cleared the `roomline_` cookies, and a later visit to `/student/room` required sign-in. On `/tutor/payments` the same control is inside the viewport, at x=12, y=862, and clicking it returned to `/` and cleared the cookies. A later visit required sign-in. File: `src/components/workspace-shell.tsx`.
 
 ### QA-16 — Demo registration ignores the typed name
 
@@ -336,12 +336,12 @@ Recommended fix: Merge the pull request #1 sign-in path. It sends a signed-in pe
 Reproduction:
 
 1. Open `/auth/register` with Supabase unset.
-2. Choose student, enter the name Riley Chen, the email `riley.chen.qa5258061@example.com`, and the password `password1`.
+2. Choose student, enter the name Riley Chen, the email `riley.chen.qa5834594@example.com`, and the password `password1`.
 3. Submit and read the workspace shell.
 
 Expected: The shell shows Riley Chen.
 
-Actual: The shell shows "Riley Chen Qa5258061". `signUp` reads the name field and, in demo mode, calls `writeDemoUser(email)` without it. `resolveUser` builds the display name from the email. Known demo addresses still resolve to Sarah Wilson and Emma Reyes. The same registration on pull request #1, as a student with `riley.chen.pr5258061@example.com`, showed "Riley Chen Pr5258061". A tutor registered as Jordan Lee with `jordan.lee.qa5258061@example.com` showed "Jordan Lee Qa5258061". On that head, Jordan Lee with `jordan.lee.pr5258061@example.com` showed "Jordan Lee Pr5258061".
+Actual: The shell shows "Riley Chen Qa5834594". `signUp` reads the name field and, in demo mode, calls `writeDemoUser(email)` without it. `resolveUser` builds the display name from the email. Known demo addresses still resolve to Sarah Wilson and Emma Reyes. The same registration on pull request #1, as a student with `riley.chen.pr6011703@example.com`, showed "Riley Chen Pr6011703". A tutor registered as Jordan Lee with `jordan.lee.qa5834594@example.com` showed "Jordan Lee Qa5834594". On that head, Jordan Lee with `jordan.lee.pr6011703@example.com` showed "Jordan Lee Pr6011703". A later registration on this tree typed Jordan Lee with `follow.tutor.follow956355@example.com` and the shell showed "Follow Tutor Follow956355".
 
 Recommended fix: Store the submitted name on the demo user cookie. Keep `resolveUser` as the fallback when the name is empty.
 
@@ -349,7 +349,7 @@ Recommended fix: Store the submitted name on the demo user cookie. Keep `resolve
 
 Head: `2b9de32` on `cursor/website-qa-audit-4c9f`. Still open. This pass built it and served it on `127.0.0.1:3001`.
 
-`npm test` ran `src/lib/safe-path.test.ts` and passed 4 tests. `npm run build` passed.
+`npm test` ran `src/lib/safe-path.test.ts` and passed 4 tests. `npm run lint` passed. `npm run build` passed.
 
 Browser retest of that head:
 
@@ -361,7 +361,7 @@ Browser retest of that head:
 - At 390×844, Sign out and Switch workspace were visible on `/student/room` (63×26 at x=315, y=145 and 120×26 at x=195, y=145). The Messages link still ran from x=352, y=77, with width 83. Nav `scrollWidth` was 447 and `clientWidth` was 390.
 - Monica Keller's row is a link to `/tutor/messages?c=monica`. After opening it, the panel included "Can we move Wednesday to 5:30 this week?" and Emma's "I got stuck on question 4 of the factoring set." was not on the page.
 - Message on Michael Tran is a link to `/tutor/messages` with no conversation id. Emma's "I got stuck on question 4 of the factoring set." was still on the page.
-- Registering Riley Chen as `riley.chen.pr5258061@example.com` showed "Riley Chen Pr5258061". Jordan Lee as `jordan.lee.pr5258061@example.com` showed "Jordan Lee Pr5258061" and still saw Emma Reyes at 9:00 AM, with dashboard cards Sessions today 4, Active students 18, and Awaiting review 9.
+- Registering Riley Chen as `riley.chen.pr6011703@example.com` showed "Riley Chen Pr6011703". Jordan Lee as `jordan.lee.pr6011703@example.com` showed "Jordan Lee Pr6011703" and still saw Emma Reyes at 9:00 AM, with dashboard cards Sessions today 4, Active students 18, and Awaiting review 9.
 - Clicking Send reset link, pressing Enter, and a native `requestSubmit()` for `sarah@roomline.com` still opened `/auth/forgot-password?email=sarah%40roomline.com` and still said a reset link would be emailed.
 
 Do not write a second copy of the redirect helper, the callback host, the chooser URL, the score bars, the narrow sign-out, or the demo inbox links.
