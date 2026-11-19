@@ -3,7 +3,7 @@
 **Hold**
 
 Date: 2026-11-19  
-Scope: full site retest of Roomline on `main` (`5c6c6e14`), demo cookie mode, served with `next start` on `http://127.0.0.1:3000`. Evidence is in [qa-report.md](./qa-report.md). Accounts included `riley.chen.qa191119t1343@example.com` and `tutor.qa191119t1343@example.com`.
+Scope: full site retest of Roomline on `main` (`5c6c6e14`), demo cookie mode, served with `next start` on `http://127.0.0.1:3000`. Evidence is in [qa-report.md](./qa-report.md). Accounts included `riley.chen.qa191119t1354@example.com` and `tutor.qa191119t1354@example.com`.
 
 ## Why this is Hold
 
@@ -15,10 +15,10 @@ High-severity issues are still open on the current site, and the Supabase auth a
 - Password reset submits and does nothing, including Enter (QA-1). The forgot-password file on pull request #1 is the same blob as `main`.
 - Join session, start assignment, grading, scheduling, and payment actions do not run. The roster Add student control does nothing (QA-2).
 - A newly registered student sees Emma Reyes’s algebra room, with no sample-data label (QA-3).
-- Below the `lg` breakpoint, the account block computes to `display: none` and the Sign out box is 0×0 (QA-15).
+- Below the `lg` breakpoint, the account block uses `hidden ... lg:block` and the Sign out box is 0×0 (QA-15).
 - Live sign-in, email confirmation, and message delivery were not tested. The profiles policy still lets a user read only their own row (QA-4).
 
-Pull request #1 remains `2b9de32`. This pass did not boot it. Its diff still leaves password reset, unwired actions, the sample student room, and live messaging open, and Message on a student still points at `/tutor/messages` with no conversation id (QA-10). The safe-path helper on that branch already rejects `//` and `\`, but that was read from the source, not run in the browser. That patch is not enough to clear this hold.
+Pull request #1 remains `2b9de32`. This pass did not boot it. Its diff still leaves password reset, unwired actions, the sample student room, and live messaging open, and Message on a student still points at `/tutor/messages` with no conversation id (QA-10). The safe-path helper on that branch already rejects `//`, `\`, and another origin, but that was read from the source, not run in the browser. That patch is not enough to clear this hold.
 
 The decision stays Hold. The open highs are core flows, and product has not accepted them.
 
