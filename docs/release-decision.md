@@ -3,7 +3,7 @@
 **Hold**
 
 Date: 2026-11-19  
-Scope: full site retest of Roomline on `main` (`5c6c6e14`), demo cookie mode, served with `next start` on `http://127.0.0.1:3000`. Evidence is in [qa-report.md](./qa-report.md). Accounts included `riley.chen.qa191119t1522@example.com` and `tutor.qa191119t1522@example.com`. The chooser check used `chooser.qa191119t1522@example.com` in a clean browser context with no cookies.
+Scope: full site retest of Roomline on `main` (`5c6c6e14`), demo cookie mode, served with `next start` on `http://127.0.0.1:3000`. Evidence is in [qa-report.md](./qa-report.md). Accounts included `riley.chen.qa191119t1540@example.com` and `tutor.qa191119t1540@example.com`. The chooser check used `chooser.qa191119t1540@example.com` in a clean browser context with no cookies.
 
 ## Why this is Hold
 
