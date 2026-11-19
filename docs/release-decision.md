@@ -3,7 +3,7 @@
 **Hold**
 
 Date: 2026-11-19  
-Scope: full site retest of Roomline on `main` (`5c6c6e14`), demo cookie mode, served with `next start` on `http://127.0.0.1:3000`. Evidence is in [qa-report.md](./qa-report.md). Accounts included `riley.chen.qa191119t1426@example.com` and `tutor.qa191119t1426@example.com`. The chooser check used `chooser.qa191119t1426@example.com` in a clean browser context.
+Scope: full site retest of Roomline on `main` (`5c6c6e14`), demo cookie mode, served with `next start` on `http://127.0.0.1:3000`. Evidence is in [qa-report.md](./qa-report.md). Accounts included `riley.chen.qa191119t1434@example.com` and `tutor.qa191119t1434@example.com`. The chooser check used `chooser.qa191119t1434@example.com` in a clean browser context.
 
 ## Why this is Hold
 
@@ -13,7 +13,7 @@ High-severity issues are still open on the current site, and the Supabase auth a
 - Sign-in with `next=/tutor/payments` draws the workspace chooser at `/tutor/payments` until a reload. The login action redirect was `/tutor/payments;push`. After reload, choosing Tutor opens Payments (QA-12).
 - `/auth/callback` on `127.0.0.1` redirects to `http://localhost:3000/auth/login?error=auth`, including when `Host` is `evil.example` (QA-13).
 - Password reset submits and does nothing, including Enter (QA-1). The forgot-password file on pull request #1 is the same blob as `main`.
-- Join session, start assignment, grading, scheduling, and payment actions do not run. The roster Add student control does nothing. Approve on the tutor dashboard is a span and stays on `/tutor` (QA-2).
+- Join session, start assignment, grading, scheduling, and payment actions do not run. The roster Add student control does nothing. Approve on the tutor dashboard is a span and stays on `/tutor`. The dashboard shows Approve three times (QA-2).
 - A newly registered student sees Emma Reyes’s algebra room, with no sample-data label (QA-3).
 - Below the `lg` breakpoint, the account block uses `hidden ... lg:block` and the Sign out box is 0×0 (QA-15).
 - Live sign-in, email confirmation, and message delivery were not tested. The profiles policy still lets a user read only their own row (QA-4).

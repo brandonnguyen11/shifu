@@ -6,7 +6,7 @@ Site under test: application code on `main` at `5c6c6e14`. This checkout’s `sr
 Browser: Chrome headless at 1280×900 and 390×844.  
 Mode: demo cookie session. `NEXT_PUBLIC_SUPABASE_URL`, the publishable key, and the secret are unset, so live auth and messaging could not be executed.
 
-This pass used `riley.chen.qa191119t1426@example.com` (typed name Riley Chen), `tutor.qa191119t1426@example.com` (typed name Tutor Audit), `chooser.qa191119t1426@example.com`, `short.qa191119t1426@example.com`, `offsite.qa191119t1426.0` through `offsite.qa191119t1426.9@example.com`, and `sarah@roomline.com`. The chooser check used a clean browser context with no prior role cookie. Narrow layout used the Riley room and the tutor calendar and dashboard at 390×844.
+This pass used `riley.chen.qa191119t1434@example.com` (typed name Riley Chen), `tutor.qa191119t1434@example.com` (typed name Tutor Audit), `chooser.qa191119t1434@example.com`, `short.qa191119t1434@example.com`, `offsite.qa191119t1434.0` through `offsite.qa191119t1434.9@example.com`, and `sarah@roomline.com`. A second tutor registration, `tutor.qa191119t1434b@example.com`, was used only to read the full assignments page and count Approve controls. The chooser check used a clean browser context with no prior role cookie. Narrow layout used the Riley room and the tutor calendar and dashboard at 390×844.
 
 Pull request #1 is still open at `2b9de32` on `cursor/website-qa-audit-4c9f`. This pass did not boot that branch. Its forgot-password file is the same blob as `main` (`902f5789eeef65a4c7b7270fc633abb1e8bd1c55`). Message on a student is an anchor to `/tutor/messages` with no conversation id. `safeInternalPath` from that commit was run locally as a function, not in the browser. It returns the fallback for `//example.com`, `///example.com`, `/\example.com`, `https://example.com`, `javascript:alert(1)`, and `%2f%2fexample.com`. It returns the literal path `/%2f%2fexample.com` unchanged. The login query `next=/%2f%2fexample.com` is decoded to the hidden value `///example.com` before submit, and that decoded value is one the function rejects. `continueTarget("/tutor/payments")` returns `/auth/continue?next=%2Ftutor%2Fpayments`. `publicOrigin("http://localhost:3000", "127.0.0.1:3000")` returns `http://127.0.0.1:3000`. The same helper keeps `http://localhost:3000` when `Host` is `evil.example`.
 
@@ -32,7 +32,7 @@ Pages checked for script errors (`/`, `/student/room`, `/tutor/payments`, `/tuto
 - Pricing “Start free” and “Start 14-day trial” are `/tutor`. Signed out, clicking Start free ends at `/auth/login?next=%2Ftutor`. Fetch recorded `307` to that login URL for `/tutor`. “Talk to us” is `/about#contact`.
 - Every tutor and student route redirects a signed-out visitor to `/auth/login` and keeps the path in `next`. Fetch recorded `307` for `/tutor`, `/tutor/students`, `/tutor/students/emma-reyes`, `/tutor/calendar`, `/tutor/messages`, `/tutor/assignments`, `/tutor/payments`, `/student`, `/student/room`, `/student/sessions`, `/student/messages`, `/student/assignments`, and `/student/progress`.
 - Login blocks an address without `@` in the browser (“Please include an '@' in the email address. 'not-an-email' is missing an '@'.”). With browser validation turned off, the server returns `/auth/login?error=email` (`x-action-redirect: /auth/login?error=email;push`) and “Enter a valid email address to continue.”
-- Register rejects `short7` for `short.qa191119t1426@example.com` with `/auth/register?error=password` and “Use a password of at least 8 characters.” `eightchr` is accepted and opens the student room (`x-action-redirect: /student/room;push`).
+- Register rejects `short7` for `short.qa191119t1434@example.com` with `/auth/register?error=password` and “Use a password of at least 8 characters.” `eightchr` is accepted and opens the student room (`x-action-redirect: /student/room;push`).
 - Choosing a workspace sets the role. A student who opens `/tutor/payments` returns to `/student/room`. A tutor who opens `/student/room` returns to `/tutor`. `/student` for a signed-in student ends at `/student/room`.
 - Sign out from the desktop student room returns to `/`. The next visit to `/tutor` asks for sign-in again (`/auth/login?next=%2Ftutor`). At 1280px the Sign out box is 62.7×26.
 - `/tutor/students/does-not-exist` renders the 404 page for a signed-in tutor and the address stays on that path.
@@ -102,7 +102,7 @@ Recommended fix: Use the path check already on pull request #1 (`src/lib/safe-pa
 Reproduction:
 
 1. Open `/auth/login?next=/tutor/payments` with no session and no role cookie.
-2. Sign in with `chooser.qa191119t1426@example.com` and any password.
+2. Sign in with `chooser.qa191119t1434@example.com` and any password.
 
 Expected: The chooser URL is `/auth/continue?next=%2Ftutor%2Fpayments`. Choosing Tutor opens payments.
 
@@ -144,7 +144,7 @@ Reproduction:
 
 Expected: Each control starts that task, or it is clearly unavailable.
 
-Actual: These controls are `<span>` elements. The URL does not change. Measured this pass: Join session stayed on `/student/room` and on `/student/sessions`, Start assignment stayed on `/student/assignments`, Book a session stayed on `/student/sessions`, Request reschedule is a span on `/student/sessions`, Approve stayed on `/tutor` (three Approve spans, one on each attention card), New session and Edit availability stayed on `/tutor/calendar`, Approve grade, New assignment, and Generate with AI stayed on `/tutor/assignments`, New message and Compose email stayed on `/tutor/messages`, New package and Export CSV stayed on `/tutor/payments`, and the roster Add student and Import stayed on `/tutor/students`. The dashboard “Add student” control is different: it is a link to `/tutor/students`, and clicking it opens the roster. It does not add a student. Message tutor on the student room does navigate to `/student/messages`. Start session on Michael Tran’s detail is also a span and stays on that page.
+Actual: These controls are `<span>` elements. The URL does not change. Measured this pass: Join session stayed on `/student/room` and on `/student/sessions`, Start assignment stayed on `/student/assignments`, Book a session stayed on `/student/sessions`, Request reschedule is a span on `/student/sessions`, Approve stayed on `/tutor` (the dashboard text contains Approve three times, one on each attention card), New session and Edit availability stayed on `/tutor/calendar`, Approve grade, New assignment, and Generate with AI stayed on `/tutor/assignments`, New message and Compose email stayed on `/tutor/messages`, New package and Export CSV stayed on `/tutor/payments`, and the roster Add student and Import stayed on `/tutor/students`. The dashboard “Add student” control is different: it is a link to `/tutor/students`, and clicking it opens the roster. It does not add a student. Message tutor on the student room does navigate to `/student/messages`. Start session on Michael Tran’s detail is also a span and stays on that page.
 
 Recommended fix: Wire the smallest real action, or render the control disabled with a short reason.
 
@@ -162,7 +162,7 @@ Reproduction:
 
 Expected: Those pages belong to the signed-in student, or they say the content is sample data.
 
-Actual: Registering `riley.chen.qa191119t1426@example.com` as Riley Chen opened `/student/room`. The shell shows “Riley Chen Qa191119t1426”. The room subtitle is “Algebra II with Sarah Wilson”, with mastery 68% and attendance 96%. Sessions lists “Today, 4:00 PM” for factoring. Progress says overall mastery 68% and focus area Factoring. The room, sessions, assignments, and progress pages do not say the content is sample data. Messages does say “(demo)”. Tutor roster, calendar, assignments, and payments are the same static records for `tutor.qa191119t1426@example.com`. Tutor messages is the page that says “(demo data)”.
+Actual: Registering `riley.chen.qa191119t1434@example.com` as Riley Chen opened `/student/room`. The shell shows “Riley Chen Qa191119t1434”. The room subtitle is “Algebra II with Sarah Wilson”, with mastery 68% and attendance 96%. Sessions lists “Today, 4:00 PM” for factoring. Progress says overall mastery 68% and focus area Factoring. The room, sessions, assignments, and progress pages do not say the content is sample data. Messages does say “(demo)”. Tutor roster, calendar, assignments, and payments are the same static records for `tutor.qa191119t1434@example.com`. Tutor messages is the page that says “(demo data)”.
 
 Recommended fix: Drive the pages from the signed-in profile, or label every block as sample data.
 
@@ -198,7 +198,7 @@ Reproduction:
 
 Expected: Both are on screen.
 
-Actual: The account block’s class is `hidden ... lg:block`. The Sign out button’s box is 0×0 on the student room (`riley.chen.qa191119t1426@example.com`), on the tutor dashboard, and on the tutor calendar. Switch workspace is in that same block and its box is 0×0 on the student room, the tutor dashboard, and the tutor calendar. At 1280px, Sign out is 62.7×26 and returns home.
+Actual: The account block’s class is `hidden ... lg:block`. The Sign out button’s box is 0×0 on the student room (`riley.chen.qa191119t1434@example.com`), on the tutor dashboard, and on the tutor calendar. Switch workspace is in that same block and its box is 0×0 on the student room, the tutor dashboard, and the tutor calendar. At 1280px, Sign out is 62.7×26 and returns home.
 
 Recommended fix: Land the shell change from pull request #1.
 
@@ -289,9 +289,9 @@ Confirmed on screen this pass:
 - The dashboard date is Sunday, September 13. Today’s schedule is Emma Reyes at 9:00 AM, Ava Mitchell at 11:30 AM, Michael Tran at 2:00 PM (“First session”), and James Keller at 4:30 PM. The signed-in student’s sessions page says “Today, 4:00 PM”, and the week grid shows Emma Reyes twice.
 - Michael Tran is a “First session” today at 2:00 PM on the dashboard. The attention card says the trial finished yesterday. His profile says “Trial completed” and “Not scheduled”.
 - The dashboard says 18 active students and awaiting review 9. The roster says 5.
-- The assignments page says 4 active, 2 need grading, 1 overdue, and “5 items”. The visible table includes Assigned (Emma Reyes), Needs grading (Ava Mitchell), Overdue (James Keller), In progress (Noah Patel), and Graded (Emma Reyes). The queue lists Ava Mitchell and Noah Patel.
+- The assignments page says 4 active, 2 need grading, 1 overdue, and “5 items”. The visible table includes Assigned (Emma Reyes), Needs grading (Ava Mitchell), Overdue (James Keller), In progress (Noah Patel), and Graded (Emma Reyes). The queue lists Ava Mitchell and Noah Patel. Approve grade is on both queue rows.
 - Payments says $3,240 this month and a next payout of $1,755. The visible paid rows are $850.00, $40.00, $450.00, and $320.00, which total $1,660. Outstanding $190 matches the refunded and failed $95.00 rows.
-- Calendar says 7 booked and 5 open blocks. The week grid text shows Emma Reyes twice, Ava Mitchell once, James Keller once, Noah Patel twice, and the words “Open block” twice.
+- Calendar says 7 booked and 5 open blocks. The week grid shows Emma Reyes twice, Ava Mitchell once, James Keller once, Noah Patel twice, and one line whose text is exactly “Open block” (Saturday at 10:00). That is 6 named sessions and 1 open row. The stat label “Open blocks” contains the words “Open block”, so a substring count of the page text is 2. The grid itself has one open row.
 
 Expected: One schedule and one set of counts.
 
@@ -323,8 +323,8 @@ Recommended fix: Land the progress layout from pull request #1.
 - Status: Open
 
 - Register placeholder says “At least 12 characters” and the server accepts 8. File: `src/app/auth/register/page.tsx`.
-- The name typed at registration is not the name in the shell. Registering “Riley Chen” as `riley.chen.qa191119t1426@example.com` showed “Riley Chen Qa191119t1426”. Registering “Tutor Audit” showed “Tutor Qa191119t1426”. Demo sign-up stores `resolveUser(email)` and ignores the name field. File: `src/app/auth/actions.ts`.
-- `/auth/continue?error=role` does not render an error. The page for `sarah@roomline.com` showed the chooser and no error sentence. File: `src/app/auth/continue/page.tsx`.
+- The name typed at registration is not the name in the shell. Registering “Riley Chen” as `riley.chen.qa191119t1434@example.com` showed “Riley Chen Qa191119t1434”. Registering “Tutor Audit” showed “Tutor Qa191119t1434”. Demo sign-up stores `resolveUser(email)` and ignores the name field. File: `src/app/auth/actions.ts`.
+- `/auth/continue?error=role` does not render an error. The page for `tutor.qa191119t1434@example.com` showed the chooser and no error sentence. File: `src/app/auth/continue/page.tsx`.
 - `next build` warns that `src/middleware.ts` should move to the `proxy` convention. The signed-out redirects under test were correct.
 - Workspace nav at 390px scrolls horizontally. Student nav `scrollWidth` 447 and `clientWidth` 390. The Messages link runs from x=352 to x=435. Tutor nav `scrollWidth` is 544 and `clientWidth` is 390. The Messages link runs from x=365 to x=448.
 - Demo cookies `roomline_user` and `roomline_role` are not `httpOnly`. After choosing Tutor, page script could read both. File: `src/app/auth/actions.ts`.
