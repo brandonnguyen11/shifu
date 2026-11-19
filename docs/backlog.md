@@ -1,6 +1,6 @@
 # Backlog
 
-Order is the order to build. High QA findings come before new product ideas. Details and reproduction steps are in `docs/qa-report.md`. The 2026-11-19 retest of `main` at `5c6c6e14` (accounts `*.qa191119t1330`) did not change this order. `next=/\example.com` is the same off-site sign-in bug, and the helper already on pull request #1 rejects it.
+Order is the order to build. High QA findings come before new product ideas. Details and reproduction steps are in `docs/qa-report.md`. The 2026-11-19 retest of `main` at `5c6c6e14` (accounts `*.qa191119t1336`) did not change this order. `next=/%2f%2fexample.com` still leaves the site, and the helper already on pull request #1 rejects that form.
 
 ## Now
 
