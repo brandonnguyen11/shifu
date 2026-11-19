@@ -1,6 +1,6 @@
 # Spec: Password reset that tells the truth
 
-Status: next product slice. Not started. The 2026-11-19 retest of `main` still shows QA-1 open.  
+Status: next product slice. Not started. The 2026-11-19 retest of `main` (accounts `*.qa191119t1330`) still shows QA-1 open. Button and Enter both leave the address in the query string.  
 Source: QA-1 in `docs/qa-report.md`. The redirect and callback fixes already on pull request #1 are a separate patch and are not part of this slice.
 
 ## User and goal
