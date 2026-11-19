@@ -2,7 +2,7 @@
 
 Order is the order to build. High QA findings come before new product ideas. Details and reproduction steps are in `docs/qa-report.md`.
 
-Latest retest: 2026-11-19, started from docs commit `c24082d`, application commit `5c6c6e14`. QA-1 through QA-16 are still open. Sign-in with `next=//example.com` still returns `//example.com;push` and lands on `https://example.com/`. `/auth/callback` on `127.0.0.1` still redirects to `localhost`. Pull request #1 is still `2b9de32`. This pass rebuilt that head. `npm test` passed 4 safe-path tests, `npm run lint` passed, and `npm run build` passed. The patch checks passed again, including the chooser submit, the callback host, the chooser URL, the score bars, narrow sign-out, and Monica's inbox row. Password reset, Message on a student, and the typed registration name stay broken on that head. Do not write a second copy.
+Latest retest: 2026-11-19, started from docs commit `d065811`, application commit `5c6c6e14`. QA-1 through QA-16 are still open. Sign-in with `next=//example.com` still returns `//example.com;push` and lands on `https://example.com/`. `/auth/callback` on `127.0.0.1` still redirects to `localhost`. Pull request #1 is still `2b9de32`. This pass rebuilt that head. `npm test` passed 4 safe-path tests, `npm run lint` passed, and `npm run build` passed. The patch checks passed again, including the chooser submit, the callback host, the chooser URL, the score bars, narrow sign-out, and Monica's inbox row. Password reset, Message on a student, and the typed registration name stay broken on that head. Do not write a second copy.
 
 ## Now
 
