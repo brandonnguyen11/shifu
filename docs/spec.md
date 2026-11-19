@@ -1,6 +1,6 @@
 # Spec: Password reset that tells the truth
 
-Status: next product slice. Not started. The 2026-11-19 retest of `main` (accounts `*.qa191119t1434`) still shows QA-1 open. Button and Enter both leave the address in the query string. The forgot-password file on pull request #1 matches `main`.  
+Status: next product slice. Not started. The 2026-11-19 retest of `main` (accounts `*.qa191119t1443`) still shows QA-1 open. Button and Enter both leave the address in the query string. The forgot-password file on pull request #1 matches `main`.  
 Source: QA-1 in `docs/qa-report.md`. The redirect and callback fixes already on pull request #1 are a separate patch and are not part of this slice.
 
 ## User and goal
