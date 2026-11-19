@@ -1,6 +1,6 @@
 # Backlog
 
-Order is the order to build. High QA findings come before new product ideas. Details and reproduction steps are in `docs/qa-report.md`. The 2026-11-19 retest of `main` at `5c6c6e14` (accounts `*.qa191119t1502`) did not change this order. Literal `next=//example.com`, `/%2f%2fexample.com`, and `/\example.com` still leave the site. The helper on pull request #1 rejects `//example.com`, `///example.com`, and `/\example.com`. The `/%2f%2fexample.com` query is decoded to `///example.com` before submit, and that decoded value is rejected. That check was a local function run, not a browser boot. The week grid shows one “Open block” row; the stat still says 5.
+Order is the order to build. High QA findings come before new product ideas. Details and reproduction steps are in `docs/qa-report.md`. The 2026-11-19 retest of `main` at `5c6c6e14` (accounts `*.qa191119t1514`) did not change this order. Literal `next=//example.com`, `/%2f%2fexample.com`, and `/\example.com` still leave the site. The helper on pull request #1 rejects `//example.com`, `///example.com`, and `/\example.com`. The `/%2f%2fexample.com` query is decoded to `///example.com` before submit, and that decoded value is rejected. That check was a local function run, not a browser boot. The week grid shows one “Open block” row; the stat still says 5.
 
 ## Now
 
