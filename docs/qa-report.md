@@ -1,7 +1,7 @@
 # QA report
 
 Date: 2026-11-19  
-Commit under test: application commit `5c6c6e14`. This pass started from docs commit `e34aa53`. The app files were not changed.  
+Commit under test: application commit `5c6c6e14`. This pass started from docs commit `4d9e327`. The app files were not changed.  
 App: Roomline (`ai-tutoring-concierge`)  
 Build: `next build`, then `next start` on `http://127.0.0.1:3000` (Next.js 16.3.5).  
 Mode: demo cookie session. `NEXT_PUBLIC_SUPABASE_URL`, the publishable key, the anon key, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` are unset in the server process. The repo has `.env.example` and no `.env`. Live Supabase auth and messaging were not executed.
@@ -82,7 +82,7 @@ Expected: Each control starts that task, or it is clearly unavailable.
 
 Actual: These controls use button styles and are `<span>` elements. Clicking them leaves the URL unchanged. This pass clicked Approve, the roster Add student, Import, New session, Edit availability, Approve grade, Generate with AI, New assignment, New message, Compose email, New package, Export CSV, and Message. Each of those stayed on its page. Join session on `/student/sessions` is also a span and stays on that page. Message on a student stays on `/tutor/students/michael-tran`. Start session is rendered beside that Message control.
 
-"Message tutor" on the student room is a real link and opens `/student/messages`. The dashboard control labeled "Add student" is a link to `/tutor/students`. This pass clicked that header link and the roster opened, with the subtitle "5 students on your roster". It does not add a student. "Open calendar" is a link to `/tutor/calendar`. The roster then shows another "Add student" control that does nothing.
+"Message tutor" on the student room is a real link and opens `/student/messages`. The dashboard control labeled "Add student" is a link to `/tutor/students`. This pass clicked that header link and the roster opened, with the subtitle "5 students on your roster". It does not add a student. This pass clicked Open calendar and the page opened `/tutor/calendar`. The roster then shows another "Add student" control that does nothing.
 
 Recommended fix: Wire the smallest real action, or render the control disabled with a short reason. A control that looks active and does nothing is the defect.
 
@@ -95,13 +95,13 @@ Recommended fix: Wire the smallest real action, or render the control disabled w
 
 Reproduction:
 
-1. Register a new student. This pass used the name Riley Chen, the email `riley.chen.qa025558@example.com`, and the password `password1`, then opened `/student/room`.
+1. Register a new student. This pass used the name Riley Chen, the email `riley.chen.qa190306@example.com`, and the password `password1`, then opened `/student/room`.
 2. Open Sessions, Assignments, and Progress.
-3. Register a new tutor. This pass used Jordan Lee, `jordan.lee.qa025558@example.com`, and the password `password1`, then opened `/tutor`.
+3. Register a new tutor. This pass used Jordan Lee, `jordan.lee.qa190306@example.com`, and the password `password1`, then opened `/tutor`.
 
 Expected: The room, sessions, assignments, and progress belong to that student, or the page says the content is sample data for Emma Reyes. A new tutor does not inherit another tutor's roster.
 
-Actual: The shell shows "Riley Chen Qa025558". The room subtitle is "Algebra II with Sarah Wilson", mastery is 68%, and the next session is today at 4:00 PM. Nothing on the room says the academic record is sample data. Progress shows Factoring. The messages page is the one surface that says the thread is a demo. The new tutor's shell shows "Jordan Lee Qa025558", and the dashboard is still Sunday, September 13, with Emma Reyes at 9:00 AM, Michael Tran as First session, and cards reading Sessions today 4, Active students 18, and Awaiting review 9. Tutor roster, calendar, assignments, and payments are the same static records for every tutor account. There is no separate student dashboard. `/student` redirects to `/student/room`.
+Actual: The shell shows "Riley Chen Qa190306". The room subtitle is "Algebra II with Sarah Wilson", mastery is 68%, and the next session is today at 4:00 PM. Nothing on the room says the academic record is sample data. Progress shows Factoring. The messages page is the one surface that says the thread is a demo. The new tutor's shell shows "Jordan Lee Qa190306", and the dashboard is still Sunday, September 13, with Emma Reyes at 9:00 AM, Michael Tran as First session, and cards reading Sessions today 4, Active students 18, and Awaiting review 9. Tutor roster, calendar, assignments, and payments are the same static records for every tutor account. There is no separate student dashboard. `/student` redirects to `/student/room`.
 
 Recommended fix: Drive these pages from the signed-in profile, or label every block as sample data until that exists.
 
@@ -335,12 +335,12 @@ Recommended fix: Merge the pull request #1 sign-in path. It sends a signed-in pe
 Reproduction:
 
 1. Open `/auth/register` with Supabase unset.
-2. Choose student, enter the name Riley Chen, the email `riley.chen.qa025558@example.com`, and the password `password1`.
+2. Choose student, enter the name Riley Chen, the email `riley.chen.qa190306@example.com`, and the password `password1`.
 3. Submit and read the workspace shell.
 
 Expected: The shell shows Riley Chen.
 
-Actual: The shell shows "Riley Chen Qa025558". `signUp` reads the name field and, in demo mode, calls `writeDemoUser(email)` without it. `resolveUser` builds the display name from the email. Known demo addresses still resolve to Sarah Wilson and Emma Reyes. The same registration on pull request #1, as a student with `riley.chen.qapr025803@example.com`, showed "Riley Chen Qapr025803". A tutor registered as Jordan Lee with `jordan.lee.qa025558@example.com` showed "Jordan Lee Qa025558". On that head, Jordan Lee with `jordan.lee.qapr025803@example.com` showed "Jordan Lee Qapr025803".
+Actual: The shell shows "Riley Chen Qa190306". `signUp` reads the name field and, in demo mode, calls `writeDemoUser(email)` without it. `resolveUser` builds the display name from the email. Known demo addresses still resolve to Sarah Wilson and Emma Reyes. The same registration on pull request #1, as a student with `riley.chen.pr190306@example.com`, showed "Riley Chen Pr190306". A tutor registered as Jordan Lee with `jordan.lee.qa190306@example.com` showed "Jordan Lee Qa190306". On that head, Jordan Lee with `jordan.lee.pr190306@example.com` showed "Jordan Lee Pr190306".
 
 Recommended fix: Store the submitted name on the demo user cookie. Keep `resolveUser` as the fallback when the name is empty.
 
@@ -360,7 +360,7 @@ Browser retest of that head:
 - At 390×844, Sign out and Switch workspace were visible on `/student/room` (63×26 at x=315, y=145 and 120×26 at x=195, y=145). The Messages link still ran from x=352, y=77, with width 83. Nav `scrollWidth` was 447 and `clientWidth` was 390.
 - Monica Keller's row is a link to `/tutor/messages?c=monica`. After opening it, the panel included "Can we move Wednesday to 5:30 this week?" and Emma's "I got stuck on question 4 of the factoring set." was not on the page.
 - Message on Michael Tran is a link to `/tutor/messages` with no conversation id. Emma's "I got stuck on question 4 of the factoring set." was still on the page.
-- Registering Riley Chen as `riley.chen.qapr025803@example.com` showed "Riley Chen Qapr025803".
+- Registering Riley Chen as `riley.chen.pr190306@example.com` showed "Riley Chen Pr190306". Jordan Lee as `jordan.lee.pr190306@example.com` showed "Jordan Lee Pr190306".
 - Clicking Send reset link for `sarah@roomline.com` still opened `/auth/forgot-password?email=sarah%40roomline.com` and still said a reset link would be emailed.
 
 Do not write a second copy of the redirect helper, the callback host, the chooser URL, the score bars, the narrow sign-out, or the demo inbox links.
