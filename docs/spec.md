@@ -1,6 +1,6 @@
 # Spec: Password reset that tells the truth
 
-Status: next product slice. Not started.  
+Status: next product slice. Not started. The 2026-11-19 retest of `main` still shows QA-1 open.  
 Source: QA-1 in `docs/qa-report.md`. The redirect and callback fixes already on pull request #1 are a separate patch and are not part of this slice.
 
 ## User and goal

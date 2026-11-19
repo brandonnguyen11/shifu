@@ -15,6 +15,7 @@ Parents are mentioned in copy and in one demo thread. There is no parent account
 
 ## Decisions that should stick
 
+- 2026-11-19: A later full-site retest of `main` (`5c6c6e14`), demo mode, on `http://127.0.0.1:3000`, found the same open highs. Accounts included `riley.chen.qa191119t1418@example.com` and `tutor.qa191119t1418@example.com`. Pull request #1 is still `2b9de32` and was not booted again. The site is not releasable. See `docs/release-decision.md`.
 - 2026-11-19: The site on `main` (`5c6c6e14`) is a prototype plus an auth and messaging foundation. It is not releasable. See `docs/release-decision.md`.
 - 2026-11-19: Pull request #1 (`2b9de32`) is the patch for off-site sign-in redirects, the chooser URL, the loopback callback host, score bars, narrow sign-out, demo inbox row selection, and the missing-secret guard. QA retested that head and those checks passed. Do not write a second copy. Password reset and "Message this student" are still open on that head.
 - 2026-11-19: Fix the open high-severity QA findings before adding a new product surface. After that patch, the next slice is password reset. See `docs/spec.md` and `docs/backlog.md`.

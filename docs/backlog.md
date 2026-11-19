@@ -1,6 +1,6 @@
 # Backlog
 
-Order is the order to build. High QA findings come before new product ideas. Details and reproduction steps are in `docs/qa-report.md`.
+Order is the order to build. High QA findings come before new product ideas. Details and reproduction steps are in `docs/qa-report.md`. The 2026-11-19 retest of `main` at `5c6c6e14` (accounts `*.qa191119t1418`) did not change this order.
 
 ## Now
 
