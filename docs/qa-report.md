@@ -80,7 +80,7 @@ Reproduction:
 
 Expected: Each control starts that task, or it is clearly unavailable.
 
-Actual: These controls use button styles and are `<span>` elements. Clicking them leaves the URL unchanged. This pass clicked Join session on `/student/room` and on `/student/sessions`, Start assignment, Book a session, Request reschedule, Approve, the roster Add student, Import, New session, Edit availability, Approve grade, Generate with AI, New assignment, New message, Compose email, New package, Export CSV, and Message. Each of those stayed on its page. Message on a student stays on `/tutor/students/michael-tran`. Clicking Start session, a span beside Message, stayed on that page.
+Actual: These controls use button styles and are `<span>` elements. Clicking them leaves the URL unchanged. This pass clicked Join session on `/student/room` and on `/student/sessions`, Start assignment, Book a session, Request reschedule, Approve, the roster Add student, New session, Edit availability, Approve grade, Generate with AI, New assignment, New message, Compose email, New package, Export CSV, and Message. Each of those stayed on its page. Message on a student stays on `/tutor/students/michael-tran`. Start session, beside Message, is also a span. Import on the roster is a span.
 
 "Message tutor" on the student room is a real link and opens `/student/messages`. The dashboard control labeled "Add student" is a link to `/tutor/students`. This pass clicked that header link and the roster opened. It does not add a student. The roster then shows another "Add student" control that does nothing.
 
