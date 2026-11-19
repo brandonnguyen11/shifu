@@ -6,7 +6,7 @@ Site under test: application code on `main` at `5c6c6e14`. This checkout’s `sr
 Browser: Chrome headless at 1280×900 and 390×844.  
 Mode: demo cookie session. `NEXT_PUBLIC_SUPABASE_URL`, the publishable key, and the secret are unset, so live auth and messaging could not be executed.
 
-This pass used `riley.chen.qa191119t1354@example.com` (typed name Riley Chen), `tutor.qa191119t1354@example.com`, `chooser.qa191119t1354@example.com`, `narrow.qa191119t1354@example.com`, `short.qa191119t1354@example.com`, `detail.qa191119t1354b@example.com`, `search.qa191119t1354@example.com`, `student.qa191119t1354b@example.com`, `offsite.qa191119t1354.0` through `offsite.qa191119t1354.9@example.com`, and `sarah@roomline.com`.
+This pass used `riley.chen.qa191119t1400@example.com` (typed name Riley Chen), `tutor.qa191119t1400@example.com`, `chooser.qa191119t1400@example.com`, `narrow.qa191119t1400@example.com`, `short.qa191119t1400@example.com`, `offsite.qa191119t1400.0` through `offsite.qa191119t1400.9@example.com`, and `sarah@roomline.com`.
 
 Pull request #1 is still open at `2b9de32` on `cursor/website-qa-audit-4c9f`. This pass did not boot that branch. Its forgot-password file is the same blob as `main` (`902f5789eeef65a4c7b7270fc633abb1e8bd1c55`). Message on a student is an anchor to `/tutor/messages` with no conversation id. `safeInternalPath` in that commit rejects a value that does not start with `/`, starts with `//`, contains `\`, or resolves to another origin. That was read from the helper, not run in the browser.
 
@@ -102,7 +102,7 @@ Recommended fix: Use the path check already on pull request #1 (`src/lib/safe-pa
 Reproduction:
 
 1. Open `/auth/login?next=/tutor/payments` with no session.
-2. Sign in with `chooser.qa191119t1354@example.com` and any password.
+2. Sign in with `chooser.qa191119t1400@example.com` and any password.
 
 Expected: The chooser URL is `/auth/continue?next=%2Ftutor%2Fpayments`. Choosing Tutor opens payments.
 
@@ -144,7 +144,7 @@ Reproduction:
 
 Expected: Each control starts that task, or it is clearly unavailable.
 
-Actual: These controls are `<span>` elements. The URL does not change. Measured this pass: Join session stayed on `/student/room` and on `/student/sessions`, Start assignment stayed on `/student/assignments`, Book a session stayed on `/student/sessions`, Approve stayed on `/tutor`, New session and Edit availability stayed on `/tutor/calendar`, Approve grade and New assignment stayed on `/tutor/assignments`, New message and Compose email stayed on `/tutor/messages`, New package stayed on `/tutor/payments`, and the roster Add student and Import stayed on `/tutor/students`. The dashboard “Add student” control is different: it is a link to `/tutor/students`, and clicking it opens the roster. It does not add a student. Message tutor on the student room does navigate to `/student/messages`. Start session on Michael Tran’s detail is also a span and stays on that page.
+Actual: These controls are `<span>` elements. The URL does not change. Measured this pass: Join session stayed on `/student/room` and on `/student/sessions`, Start assignment stayed on `/student/assignments`, Book a session stayed on `/student/sessions`, Request reschedule is a span on `/student/sessions`, Approve stayed on `/tutor`, New session and Edit availability stayed on `/tutor/calendar`, Approve grade, New assignment, and Generate with AI stayed on `/tutor/assignments`, New message and Compose email stayed on `/tutor/messages`, New package and Export CSV stayed on `/tutor/payments`, and the roster Add student and Import stayed on `/tutor/students`. The dashboard “Add student” control is different: it is a link to `/tutor/students`, and clicking it opens the roster. It does not add a student. Message tutor on the student room does navigate to `/student/messages`. Start session on Michael Tran’s detail is also a span and stays on that page.
 
 Recommended fix: Wire the smallest real action, or render the control disabled with a short reason.
 
@@ -162,7 +162,7 @@ Reproduction:
 
 Expected: Those pages belong to the signed-in student, or they say the content is sample data.
 
-Actual: Registering `riley.chen.qa191119t1354@example.com` as Riley Chen opened `/student/room`. The shell shows “Riley Chen Qa191119t1354”. The room subtitle is “Algebra II with Sarah Wilson”, with mastery 68% and attendance 96%. Sessions lists “Today, 4:00 PM” for factoring. Progress says overall mastery 68% and focus area Factoring. The room, sessions, assignments, and progress pages do not say the content is sample data. Messages does say “(demo)”. Tutor roster, calendar, assignments, and payments are the same static records for `tutor.qa191119t1354@example.com`.
+Actual: Registering `riley.chen.qa191119t1400@example.com` as Riley Chen opened `/student/room`. The shell shows “Riley Chen Qa191119t1400”. The room subtitle is “Algebra II with Sarah Wilson”, with mastery 68% and attendance 96%. Sessions lists “Today, 4:00 PM” for factoring. Progress says overall mastery 68% and focus area Factoring. The room, sessions, assignments, and progress pages do not say the content is sample data. Messages does say “(demo)”. Tutor roster, calendar, assignments, and payments are the same static records for `tutor.qa191119t1400@example.com`.
 
 Recommended fix: Drive the pages from the signed-in profile, or label every block as sample data.
 
@@ -198,7 +198,7 @@ Reproduction:
 
 Expected: Both are on screen.
 
-Actual: The account block’s class is `hidden ... lg:block`. The Sign out button’s box is 0×0 on the student room (`narrow.qa191119t1354@example.com`) and on the tutor dashboard. Switch workspace is in that same block and is also hidden. At 1280px, Sign out is 63×26 and returns home.
+Actual: The account block’s class is `hidden ... lg:block`. The Sign out button’s box is 0×0 on the student room (`narrow.qa191119t1400@example.com`) and on the tutor dashboard. Switch workspace is in that same block and is also hidden. At 1280px, Sign out is 63×26 and returns home.
 
 Recommended fix: Land the shell change from pull request #1.
 
@@ -324,8 +324,8 @@ Recommended fix: Land the progress layout from pull request #1.
 - Status: Open
 
 - Register placeholder says “At least 12 characters” and the server accepts 8. File: `src/app/auth/register/page.tsx`.
-- The name typed at registration is not the name in the shell. Registering “Riley Chen” as `riley.chen.qa191119t1354@example.com` showed “Riley Chen Qa191119t1354”. Demo sign-up stores `resolveUser(email)` and ignores the name field. File: `src/app/auth/actions.ts`.
-- `/auth/continue?error=role` does not render an error. The page for `tutor.qa191119t1354@example.com` showed the chooser and no error sentence. File: `src/app/auth/continue/page.tsx`.
+- The name typed at registration is not the name in the shell. Registering “Riley Chen” as `riley.chen.qa191119t1400@example.com` showed “Riley Chen Qa191119t1400”. Demo sign-up stores `resolveUser(email)` and ignores the name field. File: `src/app/auth/actions.ts`.
+- `/auth/continue?error=role` does not render an error. The page for `tutor.qa191119t1400@example.com` showed the chooser and no error sentence. File: `src/app/auth/continue/page.tsx`.
 - `next build` warns that `src/middleware.ts` should move to the `proxy` convention. The signed-out redirects under test were correct.
 - Workspace nav at 390px scrolls horizontally. Student nav `scrollWidth` 447 and `clientWidth` 390. The Messages link runs from x=352 to x=435. Tutor nav `scrollWidth` is 544 and `clientWidth` is 390. The Messages link runs from x=365 to x=448.
 - Demo cookies `roomline_user` and `roomline_role` are not `httpOnly`. After choosing Tutor, `document.cookie` could read both. File: `src/app/auth/actions.ts`.
