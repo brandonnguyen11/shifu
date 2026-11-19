@@ -6,9 +6,9 @@ Site under test: application code on `main` at `5c6c6e14`. This checkout’s `sr
 Browser: Chrome headless at 1280×900 and 390×844.  
 Mode: demo cookie session. `NEXT_PUBLIC_SUPABASE_URL`, the publishable key, and the secret are unset, so live auth and messaging could not be executed.
 
-This pass used `riley.chen.qa191119t1336@example.com` (typed name Riley Chen), `tutor.qa191119t1336@example.com` (typed name Riley Chen), `chooser.qa191119t1336@example.com`, `offsite.qa191119t1336@example.com`, `eight.qa191119t1336@example.com`, `short.qa191119t1336@example.com`, `narrow.qa191119t1336@example.com`, and `sarah@roomline.com`.
+This pass used `riley.chen.qa191119t1343@example.com` (typed name Riley Chen), `tutor.qa191119t1343@example.com` (typed name Riley Chen), `chooser.qa191119t1343@example.com`, `narrow.qa191119t1343@example.com`, `short.qa191119t1343@example.com`, `detail.qa191119t1343b@example.com`, `student.qa191119t1343b@example.com`, `offsite.qa191119t1343b.*@example.com`, and `sarah@roomline.com`.
 
-Pull request #1 is still `2b9de32` on `cursor/website-qa-audit-4c9f`. This pass did not boot that branch. Its forgot-password file is the same blob as `main` (`902f5789eeef65a4c7b7270fc633abb1e8bd1c55`). Message on a student is an anchor to `/tutor/messages` with no conversation id. `safeInternalPath` in that commit rejects a value that starts with `//`, contains `\`, or parses to another origin. That was read from the helper, not run in the browser.
+Pull request #1 is still open at `2b9de32` on `cursor/website-qa-audit-4c9f`. This pass did not boot that branch. Its forgot-password file is the same blob as `main` (`902f5789eeef65a4c7b7270fc633abb1e8bd1c55`). Message on a student is an anchor to `/tutor/messages` with no conversation id. `safeInternalPath` in that commit rejects a value that does not start with `/`, starts with `//`, or contains `\`. That was read from the helper, not run in the browser.
 
 **Release decision: Hold.** See [release-decision.md](./release-decision.md).
 
@@ -30,15 +30,16 @@ Pages checked for script errors (`/`, `/student/room`, `/tutor/payments`, `/tuto
 - Public pages return 200: `/`, `/about`, `/pricing`, `/trust`, `/auth/login`, `/auth/register`, `/auth/forgot-password`.
 - Desktop header links are About, Pricing, and Trust & FERPA. About has `mission`, `approach`, `careers`, and `contact`. Trust has `ferpa`, `coppa`, `privacy`, `terms`, `security`, `dpa`, `subprocessors`, and `status`. Home has `demo`.
 - Pricing “Start free” and “Start 14-day trial” are `/tutor`. Signed out, `/tutor` is `307` to `/auth/login?next=%2Ftutor`. “Talk to us” is `/about#contact`.
-- Every tutor and student route redirects a signed-out visitor to `/auth/login` and keeps the path in `next`.
+- Every tutor and student route redirects a signed-out visitor to `/auth/login` and keeps the path in `next`. Curl recorded `307` for `/tutor`, `/student`, `/student/room`, and `/tutor/payments`.
 - Login blocks an address without `@` in the browser (“Please include an '@' in the email address. 'not-an-email' is missing an '@'.”). With browser validation turned off, the server returns `/auth/login?error=email` (`x-action-redirect: /auth/login?error=email;push`) and “Enter a valid email address to continue.”
 - Register rejects `short7` with `/auth/register?error=password` and “Use a password of at least 8 characters.” `eightchr` is accepted and opens the student room (`x-action-redirect: /student/room;push`).
-- Choosing a workspace sets the role. A student who opens `/tutor/payments` returns to `/student/room`. A tutor who opens `/student/room` returns to `/tutor`. `/student` redirects to `/student/room`.
-- Sign out from the desktop student room returns to `/` (`x-action-redirect: /;push`). The next visit to `/tutor` asks for sign-in again (`/auth/login?next=%2Ftutor`).
+- Choosing a workspace sets the role. A student who opens `/tutor/payments` returns to `/student/room`. A tutor who opens `/student/room` returns to `/tutor`. `/student` for a signed-in tutor ends at `/tutor`.
+- Sign out from the desktop student room returns to `/`. The next visit to `/tutor` asks for sign-in again (`/auth/login?next=%2Ftutor`).
 - `/tutor/students/does-not-exist` renders the 404 page for a signed-in tutor.
-- Michael Tran’s detail shows “No assessments yet” and “Nothing assigned yet”.
+- Michael Tran’s detail shows “No assessments yet”, “Trial completed”, “Not scheduled”, and “Assignments 0/0”.
 - `https://example.com` and `javascript:alert(1)` as `next` stay on `/auth/continue`. The action redirect for both is `/auth/continue;push`.
-- At 390px the home page does not overflow (`scrollWidth` 390). The tutor week grid is 720px wide and the page `scrollWidth` stays 390.
+- A `next` value that is still the characters `%2f%2f` after one decode (`/auth/login?next=%252f%252fexample.com`) stays on `/auth/continue`. `/auth/login?next=/%252f%252fexample.com` stays on this host at `/%2f%2fexample.com` and shows the 404 page.
+- At 390px the home page does not overflow (`scrollWidth` 390). The tutor week grid is 720px wide inside an `overflow-x-auto` region, and the page `scrollWidth` stays 390.
 - Demo sending is disabled. The student page says “Sending is disabled until live messaging is connected.” The tutor thread says “Sending is disabled in demo mode.” Message tutor on the student room is a real link to `/student/messages`.
 
 ## Open findings
@@ -73,23 +74,23 @@ Reproduction:
 
 1. Open `/auth/login?next=//example.com`.
 2. Sign in with any email and a non-empty password.
-3. Repeat with `/auth/login?next=///example.com`, `/auth/login?next=/%2f%2fexample.com`, `/auth/login?next=%2f%2fexample.com`, and `/auth/login?next=/\example.com`.
+3. Repeat with the other query strings in the table. Use the query string as written. Do not encode it a second time.
 
 Expected: The person stays on this site, on the workspace chooser.
 
-Actual: `next.startsWith("/")` treats these values as internal.
+Actual: `next.startsWith("/")` treats these values as internal. Chrome requested `http://example.com/` and then `https://example.com/`.
 
-| `next` query | Hidden field | `x-action-redirect` | Browser |
+| `next` query, as opened | Hidden field | `x-action-redirect` | Browser |
 | --- | --- | --- | --- |
-| `//example.com` | `//example.com` | `//example.com;push` | Requested `http://example.com/` and `https://example.com/` |
-| `///example.com` | `///example.com` | `///example.com;push` | Same off-site requests |
-| `/%2f%2fexample.com` | `///example.com` | `///example.com;push` | Same off-site requests |
-| `%2f%2fexample.com` and `%2F%2Fexample.com` | `//example.com` | `//example.com;push` | Same off-site requests |
-| `/\example.com` | `/\example.com` | `/\example.com;push` | Same off-site requests |
+| `//example.com` | `//example.com` | `//example.com;push` | `https://example.com/` |
+| `///example.com` | `///example.com` | `///example.com;push` | `https://example.com/` |
+| `/%2f%2fexample.com` | `///example.com` | `///example.com;push` | `https://example.com/` |
+| `%2f%2fexample.com` and `%2F%2Fexample.com` | `//example.com` | `//example.com;push` | `https://example.com/` |
+| `/\example.com` | `/\example.com` | `/\example.com;push` | `https://example.com/` |
 
-A query that is encoded a second time (`next` whose value still contains the characters `%2f%2f`) stays on this host at `/%2f%2fexample.com` and shows the 404 page. `https://example.com` and `javascript:alert(1)` stay on `/auth/continue`.
+`https://example.com` and `javascript:alert(1)` stay on `/auth/continue`.
 
-Recommended fix: Use the path check already on pull request #1 (`src/lib/safe-path.ts`). Its source already rejects `//`, `///`, and `\`. Do not write a second copy.
+Recommended fix: Use the path check already on pull request #1 (`src/lib/safe-path.ts`). Its source already rejects `//` and `\`. Do not write a second copy.
 
 ### QA-12 — A workspace return path renders the chooser on the protected URL
 
@@ -101,7 +102,7 @@ Recommended fix: Use the path check already on pull request #1 (`src/lib/safe-pa
 Reproduction:
 
 1. Open `/auth/login?next=/tutor/payments` with no session.
-2. Sign in with `chooser.qa191119t1336@example.com` and any password.
+2. Sign in with `chooser.qa191119t1343@example.com` and any password.
 
 Expected: The chooser URL is `/auth/continue?next=%2Ftutor%2Fpayments`. Choosing Tutor opens payments.
 
@@ -143,7 +144,7 @@ Reproduction:
 
 Expected: Each control starts that task, or it is clearly unavailable.
 
-Actual: These controls are `<span>` elements. The URL does not change. Measured this pass: Join session stayed on `/student/sessions`, Start assignment stayed on `/student/assignments`, Approve stayed on `/tutor`, New session stayed on `/tutor/calendar`, Approve grade stayed on `/tutor/assignments`, New message stayed on `/tutor/messages`, New package stayed on `/tutor/payments`, and the roster Add student stayed on `/tutor/students`. The dashboard “Add student” control is different: it is a link to `/tutor/students` and does not add a student. Message tutor on the student room does navigate to `/student/messages`.
+Actual: These controls are `<span>` elements. The URL does not change. Measured this pass: Join session stayed on `/student/sessions`, Start assignment stayed on `/student/assignments`, Book a session stayed on `/student/sessions`, Approve stayed on `/tutor`, New session stayed on `/tutor/calendar`, Approve grade stayed on `/tutor/assignments`, New message stayed on `/tutor/messages`, New package stayed on `/tutor/payments`, and the roster Add student stayed on `/tutor/students`. The dashboard “Add student” control is different: it is a link to `/tutor/students` and does not add a student. Message tutor on the student room does navigate to `/student/messages`.
 
 Recommended fix: Wire the smallest real action, or render the control disabled with a short reason.
 
@@ -161,7 +162,7 @@ Reproduction:
 
 Expected: Those pages belong to the signed-in student, or they say the content is sample data.
 
-Actual: Registering `riley.chen.qa191119t1336@example.com` as Riley Chen opened `/student/room`. The shell shows “Riley Chen Qa191119t1336”. The room subtitle is “Algebra II with Sarah Wilson”, with mastery 68% and attendance 96%. Sessions lists “Today, 4:00 PM” for factoring. Progress says overall mastery 68% and focus area Factoring. The room, sessions, assignments, and progress pages do not say the content is sample data. Messages does say “(demo)”. Tutor roster, calendar, assignments, and payments are the same static records for `tutor.qa191119t1336@example.com`.
+Actual: Registering `riley.chen.qa191119t1343@example.com` as Riley Chen opened `/student/room`. The shell shows “Riley Chen Qa191119t1343”. The room subtitle is “Algebra II with Sarah Wilson”, with mastery 68% and attendance 96%. Sessions lists “Today, 4:00 PM” for factoring. Progress says overall mastery 68% and focus area Factoring. The room, sessions, assignments, and progress pages do not say the content is sample data. Messages does say “(demo)”. Tutor roster, calendar, assignments, and payments are the same static records for `tutor.qa191119t1343@example.com`.
 
 Recommended fix: Drive the pages from the signed-in profile, or label every block as sample data.
 
@@ -197,7 +198,7 @@ Reproduction:
 
 Expected: Both are on screen.
 
-Actual: The account block’s class is `hidden ... lg:block` and its computed display is `none`. The Sign out button’s box is 0×0 on the student room (`narrow.qa191119t1336@example.com`) and on the tutor dashboard. Switch workspace is in that same block and is also 0×0. At 1280px, Sign out returns home.
+Actual: The account block’s class is `hidden ... lg:block` and its computed display is `none`. The Sign out button’s box is 0×0 on the student room (`narrow.qa191119t1343@example.com`) and on the tutor dashboard. Switch workspace is in that same block and is also hidden. At 1280px, Sign out returns home.
 
 Recommended fix: Land the shell change from pull request #1.
 
@@ -216,7 +217,7 @@ Reproduction:
 
 Expected: Message opens Michael’s thread. Choosing Monica opens her thread.
 
-Actual: On main, Message is a `<span>`. The click stays on `/tutor/students/michael-tran`. Inbox rows are not links. Clicking Monica Keller leaves the URL at `/tutor/messages`. The open panel still shows Emma Reyes and “I got stuck on question 4 of the factoring set.” Monica’s name remains in the list. On pull request #1, the file makes Message a link to `/tutor/messages` with no conversation id. Michael’s demo id is `michael`.
+Actual: On main, Message is a `<span>`. The click stays on `/tutor/students/michael-tran`. Inbox rows are not links. Clicking Monica Keller leaves the URL at `/tutor/messages`. The open panel still shows Emma Reyes and “I got stuck on question 4 of the factoring set.” Monica’s name remains in the list. On pull request #1, the file makes Message a link to `/tutor/messages` with no conversation id.
 
 Recommended fix: Point Message at that student’s conversation. Do not stop at `/tutor/messages`.
 
@@ -235,7 +236,7 @@ Reproduction:
 
 Expected: A real password check, or copy that this local mode does not use the password.
 
-Actual: The different password opens “Choose your workspace” for `sarah@roomline.com`. The action redirect is `/auth/continue;push`. The server action does not read the password in demo mode. The form is prefilled with `demo-password`.
+Actual: The different password opens “Choose your workspace” for `sarah@roomline.com`. The action redirect is `/auth/continue;push`. The server action does not read the password in demo mode. The form is prefilled with `demo-password`. The chooser does not say the password was skipped.
 
 Recommended fix: Keep the bypass only for local demo, and say that on the form.
 
@@ -288,7 +289,7 @@ Confirmed on screen this pass:
 - The dashboard date is Sunday, September 13. Emma Reyes is at 9:00 AM on Today’s schedule. The signed-in student’s sessions page says “Today, 4:00 PM”, and the week grid shows Emma at 16:00 on two days.
 - Michael Tran is a “First session” today at 2:00 PM on the dashboard. His profile says “Trial completed” and “Not scheduled”.
 - The dashboard says 18 active students. The roster says 5.
-- Awaiting review is 9. The assignments page says 2 need grading. The visible status text includes one “Needs grading” table row (Ava Mitchell). The queue also lists Noah Patel, whose table row is “In progress”. The other visible table statuses are one Assigned, one Overdue, and one Graded.
+- Awaiting review is 9. The assignments page says 2 need grading. The table has one “Needs grading” row (Ava Mitchell). The queue also lists Noah Patel, whose table row is “In progress”. The other visible table statuses are one Assigned, one Overdue, and one Graded.
 - Assignments says 4 active, “assigned and in progress”. The table has one Assigned row and one In progress row, plus Overdue, Needs grading, and Graded.
 - Payments says $3,240 this month and a next payout of $1,755. The visible paid rows are $850, $40, $450, and $320, which total $1,660. Outstanding $190 matches the failed and refunded $95 rows.
 - Calendar says 7 booked and 5 open blocks. The week grid shows Emma twice, Ava, James, Noah twice, and one Open block.
@@ -323,8 +324,8 @@ Recommended fix: Land the progress layout from pull request #1.
 - Status: Open
 
 - Register placeholder says “At least 12 characters” and the server accepts 8. File: `src/app/auth/register/page.tsx`.
-- The name typed at registration is not the name in the shell. Registering “Riley Chen” as `riley.chen.qa191119t1336@example.com` showed “Riley Chen Qa191119t1336”. The same typed name on `tutor.qa191119t1336@example.com` showed “Tutor Qa191119t1336”. Demo sign-up stores `resolveUser(email)` and ignores the name field. File: `src/app/auth/actions.ts`.
-- `/auth/continue?error=role` does not render an error. The page for `tutor.qa191119t1336@example.com` showed the chooser and no error sentence. File: `src/app/auth/continue/page.tsx`.
+- The name typed at registration is not the name in the shell. Registering “Riley Chen” as `riley.chen.qa191119t1343@example.com` showed “Riley Chen Qa191119t1343”. The same typed name on `tutor.qa191119t1343@example.com` showed “Tutor Qa191119t1343”. Demo sign-up stores `resolveUser(email)` and ignores the name field. File: `src/app/auth/actions.ts`.
+- `/auth/continue?error=role` does not render an error. The page for `tutor.qa191119t1343@example.com` showed the chooser and no error sentence. File: `src/app/auth/continue/page.tsx`.
 - `next build` warns that `src/middleware.ts` should move to the `proxy` convention. The signed-out redirects under test were correct.
 - Workspace nav at 390px scrolls horizontally. Student nav `scrollWidth` 447 and `clientWidth` 390. The Messages link runs from x=352 to x=435. Tutor nav `scrollWidth` is 544 and `clientWidth` is 390. The Messages link runs from x=365 to x=448.
 - Demo cookies `roomline_user` and `roomline_role` are not `httpOnly`. After choosing Tutor, `document.cookie` could read both. File: `src/app/auth/actions.ts`.
