@@ -1,7 +1,7 @@
 # QA report
 
 Date: 2026-11-19  
-Commit under test: application commit `5c6c6e14`. This pass started from docs commit `be31d38`. The app files were not changed.  
+Commit under test: application commit `5c6c6e14`. This pass started from docs commit `85b43e0`. The app files were not changed.  
 App: Roomline (`ai-tutoring-concierge`)  
 Build: `next build`, then `next start` on `http://127.0.0.1:3000` (Next.js 16.3.5).  
 Mode: demo cookie session. `NEXT_PUBLIC_SUPABASE_URL`, the publishable key, the anon key, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` are unset in the server process. The repo has `.env.example` and no `.env`. Live Supabase auth and messaging were not executed.
@@ -19,7 +19,7 @@ This pass reproduced QA-1 through QA-16 on `5c6c6e14`. Sign-in with `next=//exam
 | `npx next typegen && npx tsc --noEmit` | `5c6c6e14` | Pass |
 | `npm run build` | `5c6c6e14` | Pass. TypeScript step inside the build passed. Warning: the `middleware` file convention is deprecated in favor of `proxy`. |
 | `npm test` | `5c6c6e14` | Not configured. `npm test` exits with "Missing script: test". This tree has no test files. |
-| Browser pass, desktop 1280×900 and mobile 390×844 | `5c6c6e14` | Done with headless Chrome against the production server. Public pages, demo auth, both workspaces, messaging, empty states, and the narrow layout were exercised. Isolated browser contexts were used for the redirect cases. |
+| Browser pass, desktop 1280×900 and mobile 390×844 | `5c6c6e14` | Done with headless Chrome against the production server. Public pages, demo auth, both workspaces, messaging, empty states, and the narrow layout were exercised. Redirect cases used a fresh browser context. |
 | Supabase sign-in, email confirmation, password-reset delivery, and a message sent by one account and read by the other | `5c6c6e14` | Not run. This environment has no project credentials. |
 | Pull request #1 head `2b9de32` | rebuilt | `npm test` passed 4 tests in `src/lib/safe-path.test.ts`. `npm run build` passed, with the same middleware warning. Browser retest on `http://127.0.0.1:3001` is below. Callback hosts were read with curl. |
 
@@ -82,7 +82,7 @@ Expected: Each control starts that task, or it is clearly unavailable.
 
 Actual: These controls use button styles and are `<span>` elements. Clicking them leaves the URL unchanged. This pass clicked Approve, Add student, Import, New session, Edit availability, Approve grade, Generate with AI, New assignment, New message, Compose email, New package, Export CSV, Message, Start session, and New note. Each stayed on its page. Message on a student stays on `/tutor/students/michael-tran`.
 
-"Message tutor" on the student room is a real link and opens `/student/messages`. The dashboard control labeled "Add student" is a link to `/tutor/students`. It opens the roster. It does not add a student. The roster then shows another "Add student" control that does nothing. "Open calendar" is a link and opens `/tutor/calendar`.
+"Message tutor" on the student room is a real link and opens `/student/messages`. The dashboard control labeled "Add student" is a link to `/tutor/students`. It opens the roster. It does not add a student. "Open calendar" is a link to `/tutor/calendar`. The roster then shows another "Add student" control that does nothing.
 
 Recommended fix: Wire the smallest real action, or render the control disabled with a short reason. A control that looks active and does nothing is the defect.
 
@@ -95,12 +95,12 @@ Recommended fix: Wire the smallest real action, or render the control disabled w
 
 Reproduction:
 
-1. Register a new student. This pass used the name Riley Chen and the email `riley.chen.qa1919@example.com`, then opened `/student/room`.
+1. Register a new student. This pass used the name Riley Chen and the email `riley.chen.qa267144@example.com`, then opened `/student/room`.
 2. Open Sessions, Assignments, and Progress.
 
 Expected: The room, sessions, assignments, and progress belong to that student, or the page says the content is sample data for Emma Reyes.
 
-Actual: The shell shows "Riley Chen Qa1919". The room subtitle is "Algebra II with Sarah Wilson", mastery is 68%, and the next session is today at 4:00 PM. Nothing on the room says the academic record is sample data. Progress shows Factoring. The messages page is the one surface that says the thread is a demo. Tutor roster, calendar, assignments, and payments are the same static records for every tutor account. There is no separate student dashboard. `/student` redirects to `/student/room`.
+Actual: The shell shows "Riley Chen Qa267144". The room subtitle is "Algebra II with Sarah Wilson", mastery is 68%, and the next session is today at 4:00 PM. Nothing on the room says the academic record is sample data. Progress shows Factoring. The messages page is the one surface that says the thread is a demo. Tutor roster, calendar, assignments, and payments are the same static records for every tutor account. There is no separate student dashboard. `/student` redirects to `/student/room`.
 
 Recommended fix: Drive these pages from the signed-in profile, or label every block as sample data until that exists.
 
@@ -334,12 +334,12 @@ Recommended fix: Merge the pull request #1 sign-in path. It sends a signed-in pe
 Reproduction:
 
 1. Open `/auth/register` with Supabase unset.
-2. Choose student, enter the name Riley Chen, the email `riley.chen.qa1919@example.com`, and a password of 8 characters.
+2. Choose student, enter the name Riley Chen, the email `riley.chen.qa267144@example.com`, and a password of 8 characters.
 3. Submit and read the workspace shell.
 
 Expected: The shell shows Riley Chen.
 
-Actual: The shell shows "Riley Chen Qa1919". `signUp` reads the name field and, in demo mode, calls `writeDemoUser(email)` without it. `resolveUser` builds the display name from the email. Known demo addresses still resolve to Sarah Wilson and Emma Reyes. The same registration on pull request #1, with `riley.chen.pr1i@example.com`, showed "Riley Chen Pr1i".
+Actual: The shell shows "Riley Chen Qa267144". `signUp` reads the name field and, in demo mode, calls `writeDemoUser(email)` without it. `resolveUser` builds the display name from the email. Known demo addresses still resolve to Sarah Wilson and Emma Reyes. The same registration on pull request #1, with `riley.chen.pr11380@example.com`, showed "Riley Chen Pr11380".
 
 Recommended fix: Store the submitted name on the demo user cookie. Keep `resolveUser` as the fallback when the name is empty.
 
@@ -359,7 +359,7 @@ Browser retest of that head:
 - At 390×844, Sign out and Switch workspace were visible on `/student/room` (63×26 at x=315, y=145 and 120×26 at x=195, y=145). The Messages link still ran from x=352, y=77, with width 83. Nav `scrollWidth` was 447 and `clientWidth` was 390.
 - Monica Keller's row is a link to `/tutor/messages?c=monica`. After opening it, the panel included "Can we move Wednesday to 5:30 this week?" and Emma's "I got stuck on question 4 of the factoring set." was not on the page.
 - Message on Michael Tran is a link to `/tutor/messages` with no conversation id. The open thread was still Emma's ("I got stuck on question 4 of the factoring set.").
-- Registering Riley Chen as `riley.chen.pr1i@example.com` showed "Riley Chen Pr1i".
+- Registering Riley Chen as `riley.chen.pr11380@example.com` showed "Riley Chen Pr11380".
 
 Do not write a second copy of the redirect helper, the callback host, the chooser URL, the score bars, the narrow sign-out, or the demo inbox links.
 
