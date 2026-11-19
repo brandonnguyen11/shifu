@@ -1,10 +1,10 @@
 # QA report
 
 Date: 2026-11-19  
-Commit under test: application commit `5c6c6e14`. This tree had no `docs/` directory. The app files were not changed.  
+Commit under test: application commit `5c6c6e14`. This pass started from docs commit `be31d38`. The app files were not changed.  
 App: Roomline (`ai-tutoring-concierge`)  
 Build: `next build`, then `next start` on `http://127.0.0.1:3000` (Next.js 16.3.5).  
-Mode: demo cookie session. `NEXT_PUBLIC_SUPABASE_URL`, the publishable key, the anon key, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` are unset, and there is no `.env`. Live Supabase auth and messaging were not executed.
+Mode: demo cookie session. `NEXT_PUBLIC_SUPABASE_URL`, the publishable key, the anon key, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` are unset in the server process. The repo has `.env.example` and no `.env`. Live Supabase auth and messaging were not executed.
 
 **Release decision: Hold.** See [release-decision.md](./release-decision.md).
 
@@ -25,8 +25,8 @@ This pass reproduced QA-1 through QA-16 on `5c6c6e14`. Sign-in with `next=//exam
 
 ## What works
 
-- `/`, `/about`, `/pricing`, `/trust`, `/auth/login`, `/auth/register`, and `/auth/forgot-password` return 200 and render their headings.
-- Desktop header links are About, Pricing, Trust & FERPA, Sign in, and Get started. Pricing "Talk to us" points at `/about#contact`. About `#mission`, `#approach`, `#careers`, and `#contact` are present. Trust `#ferpa`, `#coppa`, `#privacy`, `#terms`, `#security`, `#dpa`, `#subprocessors`, and `#status` are present.
+- `/`, `/about`, `/pricing`, `/trust`, `/auth/login`, `/auth/register`, and `/auth/forgot-password` return 200. Headings: "The operating system for tutoring.", "Built for the people who actually run the sessions.", "Priced per tutor, not per student.", "Student records deserve boring, predictable handling.", "Sign in", "Create your account", and "Reset your password".
+- Desktop header links are About, Pricing, Trust & FERPA, Sign in, and Get started. Pricing "Talk to us" points at `/about#contact`. About `#mission`, `#approach`, `#careers`, and `#contact` are present. Trust `#ferpa`, `#coppa`, `#privacy`, `#terms`, `#security`, `#dpa`, `#subprocessors`, and `#status` are present. Sign in links to `/auth/forgot-password`.
 - Every tutor and student route checked, including `/student`, redirects a signed-out visitor with `307` to `/auth/login` and keeps the original path in `next`. Confirmed from the `Location` header.
 - Register rejects a 7-character password (`/auth/register?error=password`, copy says at least 8 characters). With the browser email check turned off, `not-an-email` reaches `/auth/register?error=email`.
 - A new student account lands on `/student/room`. `/student` then redirects to `/student/room`. "Message tutor" is a link and opens `/student/messages`.
@@ -34,7 +34,7 @@ This pass reproduced QA-1 through QA-16 on `5c6c6e14`. Sign-in with `next=//exam
 - Sign out on a desktop-width screen returns to `/`. The `roomline_` cookies are gone. A later visit to `/student/room` with no session requires sign-in again. On `/tutor/payments` at 1280×900 the Sign out button is inside the viewport (63×26 at x=12, y=862).
 - A sign-in with no `next` opens the chooser at `/auth/continue`.
 - `/tutor/students/does-not-exist` returns 404. After the page finishes loading it reads "404" and "This page could not be found."
-- Michael Tran's detail shows "No assessments yet", "Nothing assigned yet", and "Not scheduled".
+- Michael Tran's detail shows "No assessments yet", "Nothing assigned yet", "Not scheduled", and "Trial completed".
 - The roster subtitle says "5 students on your roster".
 - Demo messaging says sending is disabled. The student page has no textarea. The tutor page says "Sending is disabled in demo mode."
 - At 390px the home page stays within the viewport (`scrollWidth` 390). The tutor payments page does too. The calendar week grid is 720px wide inside a horizontal scroller whose client width is 340. The calendar page `scrollWidth` stays 390.
@@ -75,14 +75,14 @@ Reproduction:
 
 1. Sign in as a student and open `/student/room`.
 2. Choose "Join session". The control is a `<span>`. The URL stays `/student/room`.
-3. Open `/student/assignments` and choose "Start assignment". The URL stays on that page. "Book a session" on `/student/sessions` does the same.
+3. Open `/student/assignments` and choose "Start assignment". The URL stays on that page. "Book a session" and "Request reschedule" on `/student/sessions` do the same.
 4. Sign in as a tutor. Choose "Approve" on the dashboard, "Add student" on `/tutor/students`, "New session" on the calendar, "Approve grade" on assignments, "New message" on messages, or "New package" on payments.
 
 Expected: Each control starts that task, or it is clearly unavailable.
 
-Actual: These controls use button styles and are `<span>` elements. Clicking them leaves the URL unchanged. This pass clicked Approve, Add student, New session, Approve grade, Generate with AI, New message, Compose email, New package, Export CSV, Message, Start session, and New note. Each stayed on its page. Message on a student stays on `/tutor/students/michael-tran`.
+Actual: These controls use button styles and are `<span>` elements. Clicking them leaves the URL unchanged. This pass clicked Approve, Add student, Import, New session, Edit availability, Approve grade, Generate with AI, New assignment, New message, Compose email, New package, Export CSV, Message, Start session, and New note. Each stayed on its page. Message on a student stays on `/tutor/students/michael-tran`.
 
-"Message tutor" on the student room is a real link and opens `/student/messages`. The dashboard control labeled "Add student" is a link to `/tutor/students`. It opens the roster. It does not add a student. The roster then shows another "Add student" control that does nothing.
+"Message tutor" on the student room is a real link and opens `/student/messages`. The dashboard control labeled "Add student" is a link to `/tutor/students`. It opens the roster. It does not add a student. The roster then shows another "Add student" control that does nothing. "Open calendar" is a link and opens `/tutor/calendar`.
 
 Recommended fix: Wire the smallest real action, or render the control disabled with a short reason. A control that looks active and does nothing is the defect.
 
@@ -95,12 +95,12 @@ Recommended fix: Wire the smallest real action, or render the control disabled w
 
 Reproduction:
 
-1. Register a new student. This pass used the name Riley Chen and the email `riley.chen.qa1119@example.com`, then opened `/student/room`.
+1. Register a new student. This pass used the name Riley Chen and the email `riley.chen.qa1919@example.com`, then opened `/student/room`.
 2. Open Sessions, Assignments, and Progress.
 
 Expected: The room, sessions, assignments, and progress belong to that student, or the page says the content is sample data for Emma Reyes.
 
-Actual: The shell shows "Riley Chen Qa1119". The room subtitle is "Algebra II with Sarah Wilson", mastery is 68%, and the next session is today at 4:00 PM. Nothing on the room says the academic record is sample data. Progress shows Factoring. The messages page is the one surface that says the thread is a demo. Tutor roster, calendar, assignments, and payments are the same static records for every tutor account. There is no separate student dashboard. `/student` redirects to `/student/room`.
+Actual: The shell shows "Riley Chen Qa1919". The room subtitle is "Algebra II with Sarah Wilson", mastery is 68%, and the next session is today at 4:00 PM. Nothing on the room says the academic record is sample data. Progress shows Factoring. The messages page is the one surface that says the thread is a demo. Tutor roster, calendar, assignments, and payments are the same static records for every tutor account. There is no separate student dashboard. `/student` redirects to `/student/room`.
 
 Recommended fix: Drive these pages from the signed-in profile, or label every block as sample data until that exists.
 
@@ -174,7 +174,7 @@ Reproduction:
 
 Expected: Both actions are on screen.
 
-Actual: Both nodes are in the page, and an ancestor has `display: none` below the `lg` breakpoint (`hidden ... lg:block`). Measured boxes were 0×0 and hidden. There is no other sign-out control in the workspace. The logo goes home and leaves the session cookie in place. At the same width, the student nav `scrollWidth` is 447 and `clientWidth` is 390. The Messages link runs from x=352 with width 83, past the viewport. On `/tutor` at the same width the nav `scrollWidth` is 544, `clientWidth` is 390, Messages runs from x=365 with width 83, and Payments runs from x=452 with width 80. The page `scrollWidth` stays 390. Desktop 1280×900 shows both actions. On `/tutor/payments` Sign out is inside the viewport, and Sign out clears the session.
+Actual: Both nodes are in the page, and an ancestor has `display: none` below the `lg` breakpoint (`hidden ... lg:block`). Measured boxes were 0×0 and hidden. There is no other sign-out control in the workspace. The logo goes home and leaves the session cookie in place. At the same width, the student nav `scrollWidth` is 447 and `clientWidth` is 390. The Messages link runs from x=352, y=77, with width 83, past the viewport. On `/tutor` at the same width the nav `scrollWidth` is 544, `clientWidth` is 390, Messages runs from x=365 with width 83, and Payments runs from x=452 with width 80. The page `scrollWidth` stays 390. Desktop 1280×900 shows both actions. On `/tutor/payments` Sign out is inside the viewport, and Sign out clears the session.
 
 Recommended fix: Merge the pull request #1 sign-out change. Keep the section nav reachable without a hidden overflow, or make the overflow obvious. The nav overflow remains a low note after sign-out is visible.
 
@@ -248,7 +248,7 @@ Reproduction:
 
 Expected: Those pages are reachable from the header.
 
-Actual: The header nav computes to `display: none` below the `md` breakpoint. The three links are in the DOM, measure 0×0, and sit under a hidden ancestor. Sign in and Get started stay visible. About, Pricing, and Trust remain in the footer. The home page does not overflow (`scrollWidth` 390).
+Actual: The header nav computes to `display: none` below the `md` breakpoint. The three links are in the DOM, measure 0×0, and sit under a hidden ancestor. Sign in and Get started stay visible. About and Pricing remain in the footer and are visible further down the page. The home page does not overflow (`scrollWidth` 390).
 
 Recommended fix: Add a compact menu for the three header links below `md`.
 
@@ -282,9 +282,9 @@ Confirmed on screen this pass:
 
 - The dashboard date is Sunday, September 13. Emma Reyes is at 9:00 AM on Today's schedule. Her student room says the next session is today at 4:00 PM.
 - The dashboard schedule includes Michael Tran with state "First session". His profile says "Trial completed" and "Not scheduled".
-- The dashboard says 18 active students. The roster subtitle says "5 students on your roster". Assignments says 2 need grading.
+- The dashboard says 18 active students. The roster subtitle says "5 students on your roster". The dashboard awaiting-review count is 9.
 - Assignments says 2 need grading. The grading queue includes the note "Needs your read on proof 3". In the assignment list on the same page, Noah's set is "In progress".
-- Payments says $3,240 this month and outstanding "$190" for "2 unpaid invoices". The rows include a Failed payment. None of the rows is an unpaid invoice.
+- Payments says $3,240 this month and outstanding "$190" for "2 unpaid invoices". The rows are Paid, Paid, Paid, Refunded, Paid, and Failed. None of the rows is an unpaid invoice.
 - Calendar says booked this week and shows one slot labeled "Open block". At 390px that grid is 720px wide inside a scroller whose client width is 340. The page itself stays at 390.
 
 Expected: One schedule and one set of counts.
@@ -322,7 +322,7 @@ Recommended fix: Merge the pull request #1 sign-in path. It sends a signed-in pe
 - `next build` warns that `src/middleware.ts` should move to the `proxy` convention. The role redirects under test were correct.
 - Footer X, LinkedIn, and GitHub links point at `/`. File: `src/components/site-footer.tsx`.
 - Workspace nav on a 390px screen lets Messages run past the viewport. See QA-7. The overflow itself is low once sign-out is visible.
-- On `/student/room` at 1280×900, Sign out is drawn at x=12, y=964, below the first screen. The click still signed out. On `/tutor/payments` the same control is inside the viewport, at x=12, y=862. File: `src/components/workspace-shell.tsx`.
+- On `/student/room` at 1280×900, Sign out is drawn at x=12, y=964, below the first screen. The document height was 1002. The click still signed out. On `/tutor/payments` the same control is inside the viewport, at x=12, y=862. File: `src/components/workspace-shell.tsx`.
 
 ### QA-16 — Demo registration ignores the typed name
 
@@ -334,12 +334,12 @@ Recommended fix: Merge the pull request #1 sign-in path. It sends a signed-in pe
 Reproduction:
 
 1. Open `/auth/register` with Supabase unset.
-2. Choose student, enter the name Riley Chen, the email `riley.chen.qa1119@example.com`, and a password of 8 characters.
+2. Choose student, enter the name Riley Chen, the email `riley.chen.qa1919@example.com`, and a password of 8 characters.
 3. Submit and read the workspace shell.
 
 Expected: The shell shows Riley Chen.
 
-Actual: The shell shows "Riley Chen Qa1119". `signUp` reads the name field and, in demo mode, calls `writeDemoUser(email)` without it. `resolveUser` builds the display name from the email. Known demo addresses still resolve to Sarah Wilson and Emma Reyes. The same registration on pull request #1, with `riley.chen.pr1h2@example.com`, showed "Riley Chen Pr1h2".
+Actual: The shell shows "Riley Chen Qa1919". `signUp` reads the name field and, in demo mode, calls `writeDemoUser(email)` without it. `resolveUser` builds the display name from the email. Known demo addresses still resolve to Sarah Wilson and Emma Reyes. The same registration on pull request #1, with `riley.chen.pr1i@example.com`, showed "Riley Chen Pr1i".
 
 Recommended fix: Store the submitted name on the demo user cookie. Keep `resolveUser` as the fallback when the name is empty.
 
@@ -351,15 +351,15 @@ Head: `2b9de32` on `cursor/website-qa-audit-4c9f`. Still open. This pass built i
 
 Browser retest of that head:
 
-- Sign-in with `next=//example.com`, `///example.com`, `/\example.com`, and `/%2f%2fexample.com` stayed on `/auth/continue`. The last of those decoded the hidden field to `///example.com` and still stayed on the chooser. `https://example.com` stayed there too.
+- Sign-in with `next=//example.com`, `///example.com`, `/\example.com`, and `/%2f%2fexample.com` stayed on `/auth/continue`. The last of those decoded the hidden field to `///example.com` and still stayed on the chooser. `https://example.com` and `javascript:alert(1)` stayed there too.
 - Choosing Tutor from `/auth/continue?next=//example.com` opened `/tutor`, not `https://example.com/`.
 - Curl against `/auth/callback` on `127.0.0.1:3001` redirected to `http://127.0.0.1:3001/auth/login?error=auth`. `Host: evil.example` redirected to `http://localhost:3001`, so the foreign host was not followed. `X-Forwarded-Host: evil.example` with `X-Forwarded-Proto: https` redirected to `https://127.0.0.1:3001`. The foreign host was not used. The forwarded scheme was. The success path after a code exchange was not executed. A callback with no code and `next=//example.com` stayed on `http://127.0.0.1:3001/auth/login?error=auth`.
 - Sign-in with `next=/tutor/payments` opened `/auth/continue?next=%2Ftutor%2Fpayments`. The hidden return path was `/tutor/payments`. Choosing Tutor then opened Payments.
 - Score history bars measured 110, 90, 78, and 105 pixels.
-- At 390×844, Sign out and Switch workspace were visible on `/student/room` (63×26 at x=315, y=145 and 120×26 at x=195, y=145). The Messages link still ran from x=352 with width 83. Nav `scrollWidth` was 447 and `clientWidth` was 390.
-- Monica Keller's row is a link to `/tutor/messages?c=monica`. After opening it, the panel was the Wednesday 5:30 reschedule, and Emma's factoring message was not the open thread.
+- At 390×844, Sign out and Switch workspace were visible on `/student/room` (63×26 at x=315, y=145 and 120×26 at x=195, y=145). The Messages link still ran from x=352, y=77, with width 83. Nav `scrollWidth` was 447 and `clientWidth` was 390.
+- Monica Keller's row is a link to `/tutor/messages?c=monica`. After opening it, the panel included "Can we move Wednesday to 5:30 this week?" and Emma's "I got stuck on question 4 of the factoring set." was not on the page.
 - Message on Michael Tran is a link to `/tutor/messages` with no conversation id. The open thread was still Emma's ("I got stuck on question 4 of the factoring set.").
-- Registering Riley Chen as `riley.chen.pr1h2@example.com` showed "Riley Chen Pr1h2".
+- Registering Riley Chen as `riley.chen.pr1i@example.com` showed "Riley Chen Pr1i".
 
 Do not write a second copy of the redirect helper, the callback host, the chooser URL, the score bars, the narrow sign-out, or the demo inbox links.
 
