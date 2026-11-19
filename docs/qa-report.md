@@ -1,7 +1,7 @@
 # QA report
 
 Date: 2026-11-19  
-Commit under test: application commit `5c6c6e14`. This pass started from docs commit `e032306`. The app files were not changed.  
+Commit under test: application commit `5c6c6e14`. This pass started from docs commit `6b0f0f6`. The app files were not changed.  
 App: Roomline (`ai-tutoring-concierge`)  
 Build: `next build`, then `next start` on `http://127.0.0.1:3000` (Next.js 16.3.5).  
 Mode: demo cookie session. `NEXT_PUBLIC_SUPABASE_URL`, the publishable key, the anon key, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` are unset in the server process. The repo has `.env.example` and no `.env`. Live Supabase auth and messaging were not executed.
@@ -82,7 +82,7 @@ Expected: Each control starts that task, or it is clearly unavailable.
 
 Actual: These controls use button styles and are `<span>` elements. Clicking them leaves the URL unchanged. This pass clicked Approve, the roster Add student, Import, New session, Edit availability, Approve grade, Generate with AI, New assignment, New message, Compose email, New package, Export CSV, and Message. Each of those stayed on its page. Join session on `/student/sessions` is also a span and stays on that page. Message on a student stays on `/tutor/students/michael-tran`. Start session is rendered beside that Message control.
 
-"Message tutor" on the student room is a real link and opens `/student/messages`. The dashboard control labeled "Add student" is a link to `/tutor/students`. It opens the roster. It does not add a student. "Open calendar" is a link to `/tutor/calendar`. The roster then shows another "Add student" control that does nothing.
+"Message tutor" on the student room is a real link and opens `/student/messages`. The dashboard control labeled "Add student" is a link to `/tutor/students`. This pass clicked that header link and the roster opened, with the subtitle "5 students on your roster". It does not add a student. "Open calendar" is a link to `/tutor/calendar`. The roster then shows another "Add student" control that does nothing.
 
 Recommended fix: Wire the smallest real action, or render the control disabled with a short reason. A control that looks active and does nothing is the defect.
 
@@ -95,13 +95,13 @@ Recommended fix: Wire the smallest real action, or render the control disabled w
 
 Reproduction:
 
-1. Register a new student. This pass used the name Riley Chen and the email `riley.chen.qa4574912@example.com`, then opened `/student/room`.
+1. Register a new student. This pass used the name Riley Chen and the email `riley.chen.qa5222480@example.com`, then opened `/student/room`.
 2. Open Sessions, Assignments, and Progress.
-3. Register a new tutor. This pass used Jordan Lee and `jordan.lee.qa4574912@example.com`, then opened `/tutor`.
+3. Register a new tutor. This pass used Jordan Lee and `jordan.lee.qa5222480@example.com`, then opened `/tutor`.
 
 Expected: The room, sessions, assignments, and progress belong to that student, or the page says the content is sample data for Emma Reyes. A new tutor does not inherit another tutor's roster.
 
-Actual: The shell shows "Riley Chen Qa4574912". The room subtitle is "Algebra II with Sarah Wilson", mastery is 68%, and the next session is today at 4:00 PM. Nothing on the room says the academic record is sample data. Progress shows Factoring. The messages page is the one surface that says the thread is a demo. The new tutor's shell shows "Jordan Lee Qa4574912", and the dashboard is still Sunday, September 13, with Emma Reyes at 9:00 AM and an active-student count of 18. Tutor roster, calendar, assignments, and payments are the same static records for every tutor account. There is no separate student dashboard. `/student` redirects to `/student/room`.
+Actual: The shell shows "Riley Chen Qa5222480". The room subtitle is "Algebra II with Sarah Wilson", mastery is 68%, and the next session is today at 4:00 PM. Nothing on the room says the academic record is sample data. Progress shows Factoring. The messages page is the one surface that says the thread is a demo. The new tutor's shell shows "Jordan Lee Qa5222480", and the dashboard is still Sunday, September 13, with Emma Reyes at 9:00 AM and an active-student count of 18. Tutor roster, calendar, assignments, and payments are the same static records for every tutor account. There is no separate student dashboard. `/student` redirects to `/student/room`.
 
 Recommended fix: Drive these pages from the signed-in profile, or label every block as sample data until that exists.
 
@@ -319,7 +319,7 @@ Recommended fix: Merge the pull request #1 sign-in path. It sends a signed-in pe
 - Status: Open. Reproduced this pass.
 
 - Register placeholder says "At least 12 characters" and the server accepts 8. The error for a shorter password says "Use a password of at least 8 characters." A 7-character password stayed on `/auth/register?error=password`. File: `src/app/auth/register/page.tsx`.
-- `/auth/continue?error=role` does not render an error. The chooser heading is "Choose your workspace" and the page does not say the role update failed. File: `src/app/auth/continue/page.tsx`.
+- `/auth/continue?error=role`, while signed in as `sarah@roomline.com`, does not render an error. The chooser heading is "Choose your workspace" and the page does not say the role update failed. File: `src/app/auth/continue/page.tsx`.
 - `next build` warns that `src/middleware.ts` should move to the `proxy` convention. The role redirects under test were correct.
 - Footer X, LinkedIn, and GitHub links point at `/`. File: `src/components/site-footer.tsx`.
 - Workspace nav on a 390px screen lets Messages run past the viewport. See QA-7. The overflow itself is low once sign-out is visible.
@@ -335,12 +335,12 @@ Recommended fix: Merge the pull request #1 sign-in path. It sends a signed-in pe
 Reproduction:
 
 1. Open `/auth/register` with Supabase unset.
-2. Choose student, enter the name Riley Chen, the email `riley.chen.qa4574912@example.com`, and a password of 8 characters.
+2. Choose student, enter the name Riley Chen, the email `riley.chen.qa5222480@example.com`, and a password of 8 characters.
 3. Submit and read the workspace shell.
 
 Expected: The shell shows Riley Chen.
 
-Actual: The shell shows "Riley Chen Qa4574912". `signUp` reads the name field and, in demo mode, calls `writeDemoUser(email)` without it. `resolveUser` builds the display name from the email. Known demo addresses still resolve to Sarah Wilson and Emma Reyes. The same registration on pull request #1, using the default tutor role and `riley.chen.pr4869994@example.com`, showed "Riley Chen Pr4869994". A tutor registered as Jordan Lee with `jordan.lee.qa4574912@example.com` showed "Jordan Lee Qa4574912".
+Actual: The shell shows "Riley Chen Qa5222480". `signUp` reads the name field and, in demo mode, calls `writeDemoUser(email)` without it. `resolveUser` builds the display name from the email. Known demo addresses still resolve to Sarah Wilson and Emma Reyes. The same registration on pull request #1, using the default tutor role and `riley.chen.pr5358272@example.com`, showed "Riley Chen Pr5358272". A tutor registered as Jordan Lee with `jordan.lee.qa5222480@example.com` showed "Jordan Lee Qa5222480".
 
 Recommended fix: Store the submitted name on the demo user cookie. Keep `resolveUser` as the fallback when the name is empty.
 
@@ -360,7 +360,7 @@ Browser retest of that head:
 - At 390×844, Sign out and Switch workspace were visible on `/student/room` (63×26 at x=315, y=145 and 120×26 at x=195, y=145). The Messages link still ran from x=352, y=77, with width 83. Nav `scrollWidth` was 447 and `clientWidth` was 390.
 - Monica Keller's row is a link to `/tutor/messages?c=monica`. After opening it, the panel included "Can we move Wednesday to 5:30 this week?" and Emma's "I got stuck on question 4 of the factoring set." was not on the page.
 - Message on Michael Tran is a link to `/tutor/messages` with no conversation id. Emma's "I got stuck on question 4 of the factoring set." was still on the page.
-- Registering Riley Chen as `riley.chen.pr4869994@example.com` showed "Riley Chen Pr4869994".
+- Registering Riley Chen as `riley.chen.pr5358272@example.com` showed "Riley Chen Pr5358272".
 - Clicking Send reset link for `sarah@roomline.com` still opened `/auth/forgot-password?email=sarah%40roomline.com` and still said a reset link would be emailed.
 
 Do not write a second copy of the redirect helper, the callback host, the chooser URL, the score bars, the narrow sign-out, or the demo inbox links.
